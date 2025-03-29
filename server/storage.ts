@@ -1,5 +1,8 @@
 import { Sub, InsertSub, Message, InsertMessage, User, InsertUser } from "@shared/schema";
 import { INITIAL_SUBS } from "../client/src/lib/data";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 // Interface for storage operations
 export interface IStorage {
@@ -31,6 +34,7 @@ export class MemStorage implements IStorage {
   private userCurrentId: number;
   private subCurrentId: number;
   private messageCurrentId: number;
+  private persistentVideoUrls: Map<number, string>; // Store video URLs persistently
 
   constructor() {
     this.users = new Map();
@@ -39,6 +43,39 @@ export class MemStorage implements IStorage {
     this.userCurrentId = 1;
     this.subCurrentId = 1;
     this.messageCurrentId = 1;
+    
+    // Initialize persistent video URLs map
+    this.persistentVideoUrls = new Map();
+    
+    // Get the path to the storage file
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    const storageFile = path.join(__dirname, '../data/video-urls.json');
+    
+    // Create data directory if it doesn't exist
+    try {
+      const dataDir = path.dirname(storageFile);
+      if (!fs.existsSync(dataDir)) {
+        fs.mkdirSync(dataDir, { recursive: true });
+        console.log(`Created data directory at: ${dataDir}`);
+      }
+      
+      // Try to load previously saved video URLs
+      if (fs.existsSync(storageFile)) {
+        const stored = fs.readFileSync(storageFile, 'utf-8');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          // Convert object to Map with numeric keys
+          Object.entries(parsed).forEach(([key, value]) => {
+            this.persistentVideoUrls.set(parseInt(key), value as string);
+          });
+          console.log(`Loaded ${this.persistentVideoUrls.size} persisted video URLs from ${storageFile}`);
+        }
+      }
+    } catch (error) {
+      console.error("Error loading persisted video URLs:", error);
+      this.persistentVideoUrls = new Map();
+    }
   }
 
   // User methods
@@ -54,7 +91,12 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.userCurrentId++;
-    const user: User = { ...insertUser, id };
+    // Ensure isAdmin is always a boolean
+    const user: User = { 
+      ...insertUser, 
+      id, 
+      isAdmin: insertUser.isAdmin ?? false 
+    };
     this.users.set(id, user);
     return user;
   }
@@ -71,7 +113,15 @@ export class MemStorage implements IStorage {
   async createSub(insertSub: InsertSub): Promise<Sub> {
     const id = this.subCurrentId++;
     const createdAt = new Date();
-    const sub: Sub = { ...insertSub, id, createdAt };
+    // Ensure all required fields are present with proper types
+    const sub: Sub = { 
+      ...insertSub, 
+      id, 
+      createdAt,
+      videoUrl: insertSub.videoUrl ?? null,
+      avatarUrl: insertSub.avatarUrl ?? null,
+      bgColor: insertSub.bgColor ?? "#7D4F50"
+    };
     this.subs.set(id, sub);
     return sub;
   }
@@ -82,6 +132,30 @@ export class MemStorage implements IStorage {
     
     const updatedSub: Sub = { ...sub, ...updateData };
     this.subs.set(id, updatedSub);
+    
+    // If videoUrl is updated, save it to persistent storage
+    if (updateData.videoUrl !== undefined) {
+      // If videoUrl is null, remove from persistent storage, otherwise add it
+      if (updateData.videoUrl === null) {
+        this.persistentVideoUrls.delete(id);
+      } else {
+        this.persistentVideoUrls.set(id, updateData.videoUrl);
+      }
+      
+      // Save to persistent storage
+      try {
+        const __filename = fileURLToPath(import.meta.url);
+        const __dirname = path.dirname(__filename);
+        const storageFile = path.join(__dirname, '../data/video-urls.json');
+        
+        const persistentObj = Object.fromEntries(this.persistentVideoUrls);
+        fs.writeFileSync(storageFile, JSON.stringify(persistentObj, null, 2), 'utf-8');
+        console.log(`Saved video URL for sub #${id} to persistent storage at ${storageFile}`);
+      } catch (error) {
+        console.error("Error saving video URL to persistent storage:", error);
+      }
+    }
+    
     return updatedSub;
   }
   
@@ -117,6 +191,23 @@ export class MemStorage implements IStorage {
         await this.createSub(subData);
       }
       console.log(`Initialized storage with ${INITIAL_SUBS.length} subs`);
+      
+      // Apply any persisted video URLs to the subs
+      let videoUrlsRestored = 0;
+      
+      // Manually iterate through Map keys and values
+      this.persistentVideoUrls.forEach((videoUrl, id) => {
+        const sub = this.subs.get(id);
+        if (sub) {
+          sub.videoUrl = videoUrl;
+          this.subs.set(id, sub);
+          videoUrlsRestored++;
+        }
+      });
+      
+      if (videoUrlsRestored > 0) {
+        console.log(`Restored ${videoUrlsRestored} video URLs from persistent storage`);
+      }
     }
   }
 }
