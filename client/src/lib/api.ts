@@ -45,16 +45,40 @@ export const sendMessage = async (message: InsertMessage) => {
 
 // Video upload endpoint
 export const uploadVideo = async (subId: string, formData: FormData) => {
-  const response = await fetch(`/api/subs/${subId}/upload`, {
-    method: 'POST',
-    body: formData,
-    credentials: 'include',
-  });
-  
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || 'Failed to upload video');
+  try {
+    console.log(`Uploading video for sub ID: ${subId}`);
+    
+    const response = await fetch(`/api/subs/${subId}/upload`, {
+      method: 'POST',
+      body: formData,
+      credentials: 'include',
+    });
+    
+    if (!response.ok) {
+      let errorMessage = 'Failed to upload video';
+      
+      try {
+        // Try to parse as JSON first
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorMessage;
+      } catch (e) {
+        // If not JSON, try to get as text
+        try {
+          const errorText = await response.text();
+          if (errorText) errorMessage = errorText;
+        } catch (e2) {
+          // Use default error message if both fail
+        }
+      }
+      
+      console.error(`Upload failed with status ${response.status}: ${errorMessage}`);
+      throw new Error(errorMessage);
+    }
+    
+    console.log('Upload successful, parsing response');
+    return response.json();
+  } catch (error: any) {
+    console.error('Video upload error:', error);
+    throw new Error(error.message || 'Failed to upload video');
   }
-  
-  return response.json();
 };

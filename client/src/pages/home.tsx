@@ -55,8 +55,35 @@ export default function Home() {
     }
 
     const file = e.target.files[0];
+    
+    // Validate file type
+    if (!file.type.startsWith('video/')) {
+      toast({
+        title: "Invalid file type",
+        description: "Please select a video file",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Validate file size (max 100MB)
+    const MAX_SIZE = 100 * 1024 * 1024; // 100MB in bytes
+    if (file.size > MAX_SIZE) {
+      toast({
+        title: "File too large",
+        description: "Video file must be smaller than 100MB",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     const formData = new FormData();
     formData.append('video', file);
+    
+    toast({
+      title: "Uploading...",
+      description: "Please wait while we upload your video",
+    });
 
     uploadMutation.mutate({ subId: selectedSubId, formData });
   };
@@ -172,26 +199,57 @@ export default function Home() {
           </DialogHeader>
           <div className="py-4">
             <p className="mb-4 text-darkbrown font-serif">Select a video file to upload for this historical figure.</p>
+            
+            {/* File upload guidance */}
+            <div className="mb-4 bg-beige/50 border border-gold/20 rounded-md p-3 text-sm text-darkbrown">
+              <h3 className="font-serif font-medium mb-1 flex items-center">
+                <span className="w-4 h-4 inline-flex items-center justify-center rounded-full bg-burgundy/10 text-burgundy mr-2 text-xs">i</span>
+                File Requirements:
+              </h3>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>Video files only (MP4, WebM, MOV, etc.)</li>
+                <li>Maximum size: 100MB</li>
+                <li>Previously uploaded videos will be replaced</li>
+              </ul>
+            </div>
+            
             <input
               type="file"
               accept="video/*"
               onChange={handleFileChange}
               className="block w-full text-darkbrown file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-serif file:bg-burgundy file:text-cream hover:file:bg-burgundy/90"
             />
+            
+            {uploadMutation.isPending && (
+              <div className="mt-4 flex items-center justify-center p-2 bg-burgundy/5 border border-burgundy/20 rounded-md">
+                <div className="animate-spin w-5 h-5 border-2 border-burgundy border-r-transparent rounded-full mr-2"></div>
+                <p className="text-sm text-burgundy font-serif">Uploading video...</p>
+              </div>
+            )}
+            
+            {uploadMutation.isError && (
+              <div className="mt-4 p-2 bg-red-50 border border-red-200 rounded-md text-sm text-red-700">
+                <p className="font-serif">Upload failed: {uploadMutation.error.message}</p>
+              </div>
+            )}
           </div>
+          
           <div className="flex justify-end gap-2">
             <Button
               variant="outline"
               onClick={() => setUploadDialogOpen(false)}
               className="border-burgundy text-burgundy hover:bg-burgundy/10 font-serif"
+              disabled={uploadMutation.isPending}
             >
               Cancel
             </Button>
             <Button
               disabled={uploadMutation.isPending}
+              type="button"
+              onClick={() => document.querySelector<HTMLInputElement>('input[type="file"]')?.click()}
               className="bg-burgundy hover:bg-burgundy/90 text-cream font-serif"
             >
-              {uploadMutation.isPending ? "Uploading..." : "Upload"}
+              {uploadMutation.isPending ? "Uploading..." : "Select File"}
             </Button>
           </div>
         </DialogContent>

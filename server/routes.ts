@@ -17,8 +17,11 @@ const uploadDir = path.join(__dirname, '../uploads');
 const ensureUploadDir = async () => {
   try {
     await fs.mkdir(uploadDir, { recursive: true });
+    console.log(`Upload directory created/verified at: ${uploadDir}`);
   } catch (error) {
     console.error("Error creating upload directory:", error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    throw new Error(`Failed to create upload directory: ${errorMessage}`);
   }
 };
 
@@ -191,31 +194,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // POST upload video for a sub
-  app.post('/api/subs/:id/upload', upload.single('video'), async (req, res) => {
-    try {
-      const subId = parseInt(req.params.id);
-      const file = req.file;
-      
-      if (!file) {
-        return res.status(400).json({ message: "No video file uploaded" });
+  app.post('/api/subs/:id/upload', async (req, res) => {
+    // Create a single instance of multer for this request
+    const uploadHandler = upload.single('video');
+    
+    // Handle multer errors explicitly
+    uploadHandler(req, res, async (err) => {
+      if (err) {
+        console.error("Multer error:", err);
+        if (err instanceof multer.MulterError) {
+          // A Multer error occurred when uploading
+          if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(413).json({ message: "File is too large (max 100MB)" });
+          }
+          return res.status(400).json({ message: `Upload error: ${err.message}` });
+        }
+        // An unknown error occurred
+        return res.status(500).json({ message: `Unknown upload error: ${err.message}` });
       }
       
-      // Get the sub
-      const sub = await storage.getSub(subId);
-      if (!sub) {
-        return res.status(404).json({ message: "Sub not found" });
+      try {
+        const subId = parseInt(req.params.id);
+        const file = req.file;
+        
+        if (!file) {
+          return res.status(400).json({ message: "No video file uploaded" });
+        }
+        
+        console.log(`File uploaded successfully: ${file.filename}, size: ${file.size} bytes`);
+        
+        // Get the sub
+        const sub = await storage.getSub(subId);
+        if (!sub) {
+          return res.status(404).json({ message: "Sub not found" });
+        }
+        
+        // Generate a relative URL to the video file
+        const videoUrl = `/uploads/${file.filename}`;
+        
+        // Update the sub with the video URL
+        const updatedSub = await storage.updateSub(subId, { videoUrl });
+        
+        if (!updatedSub) {
+          return res.status(500).json({ message: "Failed to update sub with video URL" });
+        }
+        
+        console.log(`Successfully updated Sub #${subId} with video URL: ${videoUrl}`);
+        res.json(updatedSub);
+      } catch (error) {
+        console.error("Error processing video upload:", error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        res.status(500).json({ message: `Upload processing error: ${errorMessage}` });
       }
-      
-      // Generate a relative URL to the video file
-      const videoUrl = `/uploads/${file.filename}`;
-      
-      // Update the sub with the video URL
-      const updatedSub = await storage.updateSub(subId, { videoUrl });
-      res.json(updatedSub);
-    } catch (error) {
-      console.error("Error uploading video:", error);
-      res.status(500).json({ message: "Failed to upload video" });
-    }
+    });
   });
 
   // Serve uploaded videos
