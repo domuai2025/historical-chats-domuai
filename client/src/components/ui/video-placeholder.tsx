@@ -77,7 +77,7 @@ export default function VideoPlaceholder({ videoUrl, bgColor = "#7D2B35" }: Vide
       {videoUrl && (
         <video 
           ref={videoRef}
-          src={videoUrl}
+          src={encodeURI(videoUrl)}
           className="absolute inset-0 w-full h-full object-cover"
           loop
           muted={!isPlaying} // Only muted when not playing
