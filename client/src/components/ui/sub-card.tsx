@@ -34,17 +34,17 @@ export default function SubCard({ sub, onUploadClick }: SubCardProps) {
       <div className="relative h-48 bg-gray-100">
         <VideoPlaceholder videoUrl={sub.videoUrl} bgColor={sub.bgColor} />
         
-        {/* Avatar circle */}
-        <div className={`absolute z-20 bottom-0 transform translate-y-1/2 left-4 
+        {/* Avatar circle - positioned in the bottom left corner of the card */}
+        <div className={`absolute z-30 bottom-0 right-0 transform translate-y-1/3 translate-x-1/3 mr-4 
                        ${isHovered ? 'avatar-glow' : ''}`}>
           <div 
-            className="avatar-circle w-16 h-16 rounded-full border-2 border-white shadow-md flex items-center justify-center overflow-hidden"
+            className="avatar-circle w-14 h-14 rounded-full border-2 border-white shadow-md flex items-center justify-center overflow-hidden"
             style={{ backgroundColor: sub.bgColor || '#7D4F50' }}
           >
             {sub.avatarUrl ? (
               <img src={sub.avatarUrl} alt={sub.name} className="w-full h-full object-cover" />
             ) : (
-              <span className="text-cream font-playfair text-xl">{subInitials}</span>
+              <span className="text-cream font-playfair text-lg">{subInitials}</span>
             )}
           </div>
         </div>

@@ -12,15 +12,31 @@ export default function VideoPlaceholder({ videoUrl, bgColor = "#7D4F50" }: Vide
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const handlePlayToggle = () => {
-    if (!videoUrl) return;
+    if (!videoUrl || !videoRef.current) return;
     
-    if (videoRef.current) {
-      if (isPlaying) {
-        videoRef.current.pause();
-      } else {
-        videoRef.current.play();
-      }
-      setIsPlaying(!isPlaying);
+    if (isPlaying) {
+      videoRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      // Ensure video is unmuted and volume is set
+      videoRef.current.muted = false;
+      videoRef.current.volume = 1.0;
+      
+      // Try to play with sound
+      videoRef.current.play().catch(error => {
+        console.error("Error playing video:", error);
+        
+        // If browser policy blocks autoplay with sound, try muted playback
+        if (error.name === "NotAllowedError" && videoRef.current) {
+          const video = videoRef.current;
+          video.muted = true;
+          video.play().catch(e => 
+            console.error("Failed to play even with muted option:", e)
+          );
+        }
+      });
+      
+      setIsPlaying(true);
     }
   };
 
@@ -44,7 +60,7 @@ export default function VideoPlaceholder({ videoUrl, bgColor = "#7D4F50" }: Vide
 
   return (
     <div 
-      className="absolute inset-0 flex items-center justify-center overflow-hidden"
+      className="absolute inset-0 flex overflow-hidden"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -64,14 +80,14 @@ export default function VideoPlaceholder({ videoUrl, bgColor = "#7D4F50" }: Vide
           src={videoUrl}
           className="absolute inset-0 w-full h-full object-cover"
           loop
-          muted
+          muted={!isPlaying} // Only muted when not playing
         />
       )}
       
       {/* Animated waveform background when no video */}
       {!videoUrl && (
-        <div className="absolute inset-0 z-0 opacity-20">
-          <div className="audio-wave">
+        <div className="absolute inset-0 z-0 opacity-20 flex items-center justify-center">
+          <div className="audio-wave w-1/2 max-w-[120px]">
             {[...Array(6)].map((_, i) => (
               <span 
                 key={i}
@@ -86,17 +102,23 @@ export default function VideoPlaceholder({ videoUrl, bgColor = "#7D4F50" }: Vide
         </div>
       )}
 
-      {/* Play/Pause button with hover animation */}
-      <div className="relative z-20">
+      {/* Play/Pause button with hover animation - positioned in the bottom right */}
+      <div className="absolute z-20 bottom-4 right-4">
         <button
           onClick={handlePlayToggle}
-          className={`play-button w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 
+          className={`play-button group w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 
                     ${isHovered ? 'scale-110 bg-white' : 'bg-white/80'} 
                     ${isPlaying ? 'text-burgundy' : 'text-burgundy'} 
                     hover:bg-burgundy hover:text-white`}
           style={{ boxShadow: '0 4px 10px rgba(0, 0, 0, 0.2)' }}
         >
-          {isPlaying ? <PauseIcon className="w-6 h-6" /> : <PlayIcon className="w-6 h-6" />}
+          {isPlaying ? <PauseIcon className="w-5 h-5" /> : <PlayIcon className="w-5 h-5" />}
+          
+          {/* Sound tooltip */}
+          <span className="absolute pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity 
+                         bottom-full right-0 mb-2 py-1 px-2 text-xs text-white bg-gray-900/90 rounded whitespace-nowrap">
+            {isPlaying ? "Sound On" : "Click for sound"}
+          </span>
         </button>
       </div>
     </div>
