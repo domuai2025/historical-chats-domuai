@@ -8,6 +8,7 @@ import { ChevronLeftIcon, MoreVerticalIcon, SendIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import ChatMessage from "@/components/ui/chat-message";
+import type { Message } from "@shared/schema";
 
 export default function Chat() {
   const [_, params] = useRoute("/chat/:id");
@@ -120,9 +121,10 @@ export default function Chat() {
               content={`Hello! I'm ${sub.name}. ${sub.bio} How can I assist you today?`}
               sender={sub.name}
               initial={subInitials}
+              bgColor={sub.bgColor}
             />
           ) : (
-            messages.map((msg) => (
+            messages.map((msg: Message) => (
               <div key={msg.id}>
                 <ChatMessage 
                   type="user"
@@ -135,6 +137,7 @@ export default function Chat() {
                   content={msg.aiResponse}
                   sender={sub.name}
                   initial={subInitials}
+                  bgColor={sub.bgColor}
                 />
               </div>
             ))

@@ -9,6 +9,8 @@ export const subs = pgTable("subs", {
   bio: text("bio").notNull(),
   prompt: text("prompt").notNull(),
   videoUrl: text("video_url"),
+  avatarUrl: text("avatar_url"),
+  bgColor: text("bg_color").default("#7D4F50"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

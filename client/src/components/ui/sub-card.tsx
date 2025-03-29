@@ -1,7 +1,8 @@
 import { Link } from "wouter";
-import { Sub } from "@shared/schema";
+import type { Sub } from "@shared/schema";
 import VideoPlaceholder from "./video-placeholder";
 import UploadButton from "./upload-button";
+import { useState } from "react";
 
 interface SubCardProps {
   sub: Sub;
@@ -9,12 +10,47 @@ interface SubCardProps {
 }
 
 export default function SubCard({ sub, onUploadClick }: SubCardProps) {
+  const [isHovered, setIsHovered] = useState(false);
+  
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase();
+  };
+  
+  const subInitials = getInitials(sub.name);
+
   return (
-    <div className="figure-card bg-white rounded-lg shadow-vintage overflow-hidden transition-shadow hover:shadow-vintage-lg border border-gold/30">
+    <div 
+      className="figure-card bg-white rounded-lg shadow-vintage overflow-hidden transition-all duration-300 hover:shadow-vintage-lg border border-gold/30"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={{ 
+        transform: isHovered ? 'translateY(-5px)' : 'translateY(0)',
+      }}
+    >
       <div className="relative h-48 bg-gray-100">
-        <VideoPlaceholder videoUrl={sub.videoUrl} />
+        <VideoPlaceholder videoUrl={sub.videoUrl} bgColor={sub.bgColor} />
+        
+        {/* Avatar circle */}
+        <div className={`absolute z-20 bottom-0 transform translate-y-1/2 left-4 
+                       ${isHovered ? 'avatar-glow' : ''}`}>
+          <div 
+            className="avatar-circle w-16 h-16 rounded-full border-2 border-white shadow-md flex items-center justify-center overflow-hidden"
+            style={{ backgroundColor: sub.bgColor || '#7D4F50' }}
+          >
+            {sub.avatarUrl ? (
+              <img src={sub.avatarUrl} alt={sub.name} className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-cream font-playfair text-xl">{subInitials}</span>
+            )}
+          </div>
+        </div>
       </div>
-      <div className="p-4">
+      
+      <div className="p-4 pt-10">
         <h3 className="font-playfair text-lg font-medium text-darkbrown">{sub.name}</h3>
         <p className="text-sm text-darkbrown/70 mb-4">{sub.title}</p>
         <div className="flex items-center justify-between">
