@@ -44,6 +44,13 @@ export default {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
+        // The Subs AI custom colors
+        burgundy: "#7D2B35",
+        mutedred: "#9A4B53",
+        gold: "#D4AF37",
+        cream: "#F5F2E9",
+        beige: "#F0EBD8",
+        darkbrown: "#4A3B32",
         chart: {
           "1": "hsl(var(--chart-1))",
           "2": "hsl(var(--chart-2))",

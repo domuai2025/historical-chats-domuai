@@ -86,21 +86,21 @@ export default function Chat() {
   return (
     <div className="fixed inset-0 z-50 bg-cream/95 flex flex-col">
       {/* Header */}
-      <header className="bg-burgundy text-cream shadow-md py-3">
+      <header className="bg-burgundy text-cream shadow-md py-3 border-b border-gold/30">
         <div className="container mx-auto px-4 flex justify-between items-center">
           <div className="flex items-center">
             <Link href="/">
-              <a className="mr-3">
+              <div className="mr-3 hover:bg-burgundy/80 p-1 rounded-full transition-colors cursor-pointer">
                 <ChevronLeftIcon className="w-6 h-6" />
-              </a>
+              </div>
             </Link>
             <div>
-              <h2 className="font-playfair text-xl">{sub.name}</h2>
-              <p className="text-xs opacity-70">{sub.title}</p>
+              <h2 className="font-serif text-xl">{sub.name}</h2>
+              <p className="text-xs opacity-70 font-serif italic">{sub.title}</p>
             </div>
           </div>
           <div>
-            <button className="text-cream/90 hover:text-cream" title="More options">
+            <button className="text-cream/90 hover:text-cream hover:bg-burgundy/80 p-1 rounded-full transition-colors" title="More options">
               <MoreVerticalIcon className="w-5 h-5" />
             </button>
           </div>
@@ -153,13 +153,13 @@ export default function Chat() {
             <Input
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className="flex-grow py-3 px-4 bg-white rounded-md border border-gold/30 focus:outline-none focus:ring-1 focus:ring-burgundy/50"
+              className="flex-grow py-3 px-4 bg-cream rounded-md border border-gold/30 focus:outline-none focus:ring-1 focus:ring-burgundy/50 font-serif"
               placeholder="Type your question here..."
               disabled={mutation.isPending}
             />
             <Button 
               type="submit"
-              className="bg-burgundy hover:bg-burgundy/90 text-cream py-3 px-6 rounded-md font-lora transition-colors"
+              className="bg-burgundy hover:bg-burgundy/90 text-cream py-3 px-6 rounded-md font-serif transition-colors"
               disabled={mutation.isPending || !message.trim()}
             >
               <div className="flex items-center">

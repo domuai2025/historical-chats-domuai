@@ -6,7 +6,7 @@ interface VideoPlaceholderProps {
   bgColor?: string | null;
 }
 
-export default function VideoPlaceholder({ videoUrl, bgColor = "#7D4F50" }: VideoPlaceholderProps) {
+export default function VideoPlaceholder({ videoUrl, bgColor = "#7D2B35" }: VideoPlaceholderProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -107,16 +107,16 @@ export default function VideoPlaceholder({ videoUrl, bgColor = "#7D4F50" }: Vide
         <button
           onClick={handlePlayToggle}
           className={`play-button group w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 
-                    ${isHovered ? 'scale-110 bg-white' : 'bg-white/80'} 
+                    ${isHovered ? 'scale-110 bg-cream border border-gold/50' : 'bg-cream/90 border border-gold/30'} 
                     ${isPlaying ? 'text-burgundy' : 'text-burgundy'} 
-                    hover:bg-burgundy hover:text-white`}
-          style={{ boxShadow: '0 4px 10px rgba(0, 0, 0, 0.2)' }}
+                    hover:bg-burgundy hover:text-cream`}
+          style={{ boxShadow: '0 4px 10px rgba(0, 0, 0, 0.15)' }}
         >
           {isPlaying ? <PauseIcon className="w-5 h-5" /> : <PlayIcon className="w-5 h-5" />}
           
           {/* Sound tooltip */}
           <span className="absolute pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity 
-                         bottom-full right-0 mb-2 py-1 px-2 text-xs text-white bg-gray-900/90 rounded whitespace-nowrap">
+                         bottom-full right-0 mb-2 py-1 px-2 text-xs text-cream bg-burgundy/90 rounded whitespace-nowrap font-serif">
             {isPlaying ? "Sound On" : "Click for sound"}
           </span>
         </button>

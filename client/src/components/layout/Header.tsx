@@ -6,24 +6,37 @@ export default function Header() {
     <header className="bg-cream border-b border-gold/30">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <Link href="/">
-          <a className="flex items-center">
-            <div className="w-10 h-10 rounded-full bg-burgundy text-cream flex items-center justify-center mr-3">
-              <span className="font-playfair text-lg">S</span>
+          <div className="flex items-center cursor-pointer">
+            <div className="w-10 h-10 rounded-full bg-cream border border-gold flex items-center justify-center mr-3 overflow-hidden">
+              <svg width="28" height="28" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="60" cy="60" r="58" fill="#F5F2E9" stroke="#D4AF37" strokeWidth="4" />
+                <circle cx="60" cy="60" r="50" fill="#F5F2E9" stroke="#7D2B35" strokeWidth="2" strokeDasharray="4 4" />
+                <g fill="#7D2B35">
+                  <path d="M60 50 Q64 40 68 50 V70 Q68 76 60 76 Q52 76 52 70 V50 Z" />
+                  <rect x="52" y="70" width="16" height="4" rx="2" />
+                  <path d="M35 30 Q38 25 41 30 V40 Q41 44 35 44 Q29 44 29 40 V30 Z" />
+                  <rect x="29" y="40" width="12" height="3" rx="1.5" />
+                  <path d="M85 30 Q88 25 91 30 V40 Q91 44 85 44 Q79 44 79 40 V30 Z" />
+                  <rect x="79" y="40" width="12" height="3" rx="1.5" />
+                  <path d="M35 75 Q38 70 41 75 V85 Q41 89 35 89 Q29 89 29 85 V75 Z" />
+                  <rect x="29" y="85" width="12" height="3" rx="1.5" />
+                  <path d="M85 75 Q88 70 91 75 V85 Q91 89 85 89 Q79 89 79 85 V75 Z" />
+                  <rect x="79" y="85" width="12" height="3" rx="1.5" />
+                </g>
+              </svg>
             </div>
             <div>
-              <h1 className="font-playfair text-burgundy font-semibold text-xl md:text-2xl">
+              <h1 className="font-serif text-burgundy font-semibold text-xl md:text-2xl">
                 The Subs <span className="text-gold font-normal">AI</span>
               </h1>
             </div>
-          </a>
+          </div>
         </Link>
         <div className="flex items-center">
-          <Link href="/">
-            <a className="text-sm text-burgundy hover:text-mutedred transition-colors flex items-center mr-4">
-              <MusicIcon className="w-4 h-4 mr-1" />
-              <span className="hidden md:inline">Vintage Audio Experience</span>
-            </a>
-          </Link>
+          <div className="text-sm text-burgundy flex items-center">
+            <MusicIcon className="w-4 h-4 mr-1" />
+            <span className="hidden md:inline italic font-serif">Vintage Audio Experience</span>
+          </div>
         </div>
       </div>
     </header>
