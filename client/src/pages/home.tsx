@@ -56,7 +56,7 @@ export default function Home() {
 
     const file = e.target.files[0];
     
-    // Validate file type
+    // Validate file type - prioritize MP4 but accept any video
     if (!file.type.startsWith('video/')) {
       toast({
         title: "Invalid file type",
@@ -66,23 +66,14 @@ export default function Home() {
       return;
     }
     
-    // Validate file size (max 100MB)
-    const MAX_SIZE = 100 * 1024 * 1024; // 100MB in bytes
-    if (file.size > MAX_SIZE) {
-      toast({
-        title: "File too large",
-        description: "Video file must be smaller than 100MB",
-        variant: "destructive",
-      });
-      return;
-    }
+    // No file size validation - allow any size
     
     const formData = new FormData();
     formData.append('video', file);
     
     toast({
       title: "Uploading...",
-      description: "Please wait while we upload your video",
+      description: "Please wait while we upload your video. This may take some time for larger files.",
     });
 
     uploadMutation.mutate({ subId: selectedSubId, formData });
@@ -207,8 +198,8 @@ export default function Home() {
                 File Requirements:
               </h3>
               <ul className="list-disc pl-5 space-y-1">
-                <li>Video files only (MP4, WebM, MOV, etc.)</li>
-                <li>Maximum size: 100MB</li>
+                <li>Video files only (MP4 recommended)</li>
+                <li>No file size limit - larger files may take longer to upload</li>
                 <li>Previously uploaded videos will be replaced</li>
               </ul>
             </div>
