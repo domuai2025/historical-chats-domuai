@@ -1,0 +1,229 @@
+import type { Express } from "express";
+import { createServer, type Server } from "http";
+import { storage } from "./storage";
+import { z } from "zod";
+import OpenAI from "openai";
+import path from "path";
+import fs from "fs/promises";
+import multer from "multer";
+import { fileURLToPath } from "url";
+import { insertSubSchema, insertMessageSchema } from "@shared/schema";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Setup video upload directory
+const uploadDir = path.join(__dirname, '../uploads');
+const ensureUploadDir = async () => {
+  try {
+    await fs.mkdir(uploadDir, { recursive: true });
+  } catch (error) {
+    console.error("Error creating upload directory:", error);
+  }
+};
+
+// Setup OpenAI
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY || "sk-demo-key",
+});
+
+// Configure multer for video uploads
+const storage_multer = multer.diskStorage({
+  destination: (_req, _file, cb) => {
+    cb(null, uploadDir);
+  },
+  filename: (_req, file, cb) => {
+    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
+    cb(null, `${uniqueSuffix}-${file.originalname}`);
+  }
+});
+
+const upload = multer({
+  storage: storage_multer,
+  limits: {
+    fileSize: 100 * 1024 * 1024, // 100MB limit
+  },
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype.startsWith('video/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only video files are allowed'));
+    }
+  }
+});
+
+export async function registerRoutes(app: Express): Promise<Server> {
+  // Ensure upload directory exists
+  await ensureUploadDir();
+
+  // GET all subs
+  app.get('/api/subs', async (_req, res) => {
+    try {
+      const subs = await storage.getAllSubs();
+      res.json(subs);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch subs" });
+    }
+  });
+
+  // GET sub by ID
+  app.get('/api/subs/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const sub = await storage.getSub(id);
+      
+      if (!sub) {
+        return res.status(404).json({ message: "Sub not found" });
+      }
+      
+      res.json(sub);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch sub" });
+    }
+  });
+
+  // POST create new sub
+  app.post('/api/subs', async (req, res) => {
+    try {
+      const subData = insertSubSchema.parse(req.body);
+      const sub = await storage.createSub(subData);
+      res.status(201).json(sub);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid sub data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create sub" });
+    }
+  });
+
+  // PATCH update sub
+  app.patch('/api/subs/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const subData = insertSubSchema.partial().parse(req.body);
+      const sub = await storage.updateSub(id, subData);
+      
+      if (!sub) {
+        return res.status(404).json({ message: "Sub not found" });
+      }
+      
+      res.json(sub);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid sub data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update sub" });
+    }
+  });
+
+  // DELETE sub
+  app.delete('/api/subs/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteSub(id);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Sub not found" });
+      }
+      
+      res.json({ message: "Sub deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete sub" });
+    }
+  });
+
+  // GET messages for a sub
+  app.get('/api/subs/:id/messages', async (req, res) => {
+    try {
+      const subId = parseInt(req.params.id);
+      const messages = await storage.getMessagesBySubId(subId);
+      res.json(messages);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch messages" });
+    }
+  });
+
+  // POST send message to sub
+  app.post('/api/messages', async (req, res) => {
+    try {
+      const messageData = insertMessageSchema.parse(req.body);
+      
+      // Get the sub to access their prompt
+      const sub = await storage.getSub(messageData.subId);
+      if (!sub) {
+        return res.status(404).json({ message: "Sub not found" });
+      }
+
+      // Generate AI response using OpenAI
+      const response = await openai.chat.completions.create({
+        // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "system",
+            content: sub.prompt
+          },
+          {
+            role: "user",
+            content: messageData.userMessage
+          }
+        ]
+      });
+
+      // Extract the AI response from OpenAI
+      const aiResponse = response.choices[0].message.content || "I'm sorry, I couldn't generate a response.";
+      
+      // Save the message with the AI response
+      const completeMessage = {
+        ...messageData,
+        aiResponse
+      };
+      
+      const savedMessage = await storage.createMessage(completeMessage);
+      res.status(201).json(savedMessage);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid message data", errors: error.errors });
+      }
+      console.error("Error sending message:", error);
+      res.status(500).json({ message: "Failed to send message" });
+    }
+  });
+
+  // POST upload video for a sub
+  app.post('/api/subs/:id/upload', upload.single('video'), async (req, res) => {
+    try {
+      const subId = parseInt(req.params.id);
+      const file = req.file;
+      
+      if (!file) {
+        return res.status(400).json({ message: "No video file uploaded" });
+      }
+      
+      // Get the sub
+      const sub = await storage.getSub(subId);
+      if (!sub) {
+        return res.status(404).json({ message: "Sub not found" });
+      }
+      
+      // Generate a relative URL to the video file
+      const videoUrl = `/uploads/${file.filename}`;
+      
+      // Update the sub with the video URL
+      const updatedSub = await storage.updateSub(subId, { videoUrl });
+      res.json(updatedSub);
+    } catch (error) {
+      console.error("Error uploading video:", error);
+      res.status(500).json({ message: "Failed to upload video" });
+    }
+  });
+
+  // Serve uploaded videos
+  app.use('/uploads', express.static(uploadDir));
+
+  // Initialize the storage with initial subs data if empty
+  await storage.initializeData();
+
+  const httpServer = createServer(app);
+  return httpServer;
+}
