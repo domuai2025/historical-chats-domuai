@@ -19,8 +19,10 @@ export default function SubCard({ sub, hasVideo = false, videoSrc, onUploadClick
   const [showAudioWave, setShowAudioWave] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [videoError, setVideoError] = useState(false);
+  const [videoLoading, setVideoLoading] = useState(false);
+  const [loadAttempts, setLoadAttempts] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const { registerPlayer, unregisterPlayer, stopAllExcept } = useVideoPlayer();
+  const { registerPlayer, unregisterPlayer, stopAllExcept, isLargeVideo } = useVideoPlayer();
   
   // Generate random wave bar heights for audio visualization
   const waveHeights = Array.from({ length: 5 }, () => Math.floor(Math.random() * 20) + 10);
@@ -35,6 +37,51 @@ export default function SubCard({ sub, hasVideo = false, videoSrc, onUploadClick
       unregisterPlayer(sub.id);
     };
   }, [sub.id, registerPlayer, unregisterPlayer, videoLoaded]);
+
+  // Special handling for large videos
+  useEffect(() => {
+    // Check if this is a large video using the context function
+    const hasLargeVideo = isLargeVideo(sub.id);
+    
+    if (hasVideo && videoSrc && hasLargeVideo && videoRef.current && !videoLoaded && !videoLoading && loadAttempts < 2) {
+      // For large videos, we'll manually manage the loading
+      setVideoLoading(true);
+      
+      // Set timeout to ensure the video is properly initialized
+      const timeoutId = setTimeout(() => {
+        if (videoRef.current) {
+          // Force metadata loading
+          videoRef.current.load();
+          
+          // Add more specific error handling
+          const errorHandler = () => {
+            console.warn(`Error loading large video for ${sub.name} (ID: ${sub.id})`);
+            setVideoError(true);
+            setVideoLoading(false);
+            setLoadAttempts(prev => prev + 1);
+          };
+          
+          videoRef.current.addEventListener('error', errorHandler, { once: true });
+          
+          // After 8 seconds, if the video hasn't loaded, consider it failed
+          const failsafeTimeout = setTimeout(() => {
+            if (!videoLoaded && videoRef.current) {
+              errorHandler();
+            }
+          }, 8000);
+          
+          return () => {
+            clearTimeout(failsafeTimeout);
+            if (videoRef.current) {
+              videoRef.current.removeEventListener('error', errorHandler);
+            }
+          };
+        }
+      }, 500);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [sub.id, sub.name, hasVideo, videoSrc, videoLoaded, videoLoading, loadAttempts, isLargeVideo]);
   
   const handlePlayPause = () => {
     if (!videoLoaded && !videoError && hasVideo) {
@@ -169,7 +216,7 @@ export default function SubCard({ sub, hasVideo = false, videoSrc, onUploadClick
               autoPlay={isPlaying}
               loop
               playsInline
-              preload="metadata"
+              preload={isLargeVideo(sub.id) ? "none" : "metadata"}
               muted={!isPlaying}
               controls
               onLoadedData={handleVideoLoad}
@@ -177,6 +224,13 @@ export default function SubCard({ sub, hasVideo = false, videoSrc, onUploadClick
               style={{ display: videoLoaded && !videoError ? 'block' : 'none' }}
               onPlay={() => setIsPlaying(true)}
               onPause={() => setIsPlaying(false)}
+              onCanPlay={() => {
+                // Mark video as loaded when it's ready to play
+                if (!videoLoaded) {
+                  setVideoLoaded(true);
+                  setVideoError(false);
+                }
+              }}
             >
               {videoSrc && <source src={videoSrc} type="video/mp4" />}
               Your browser does not support the video tag.
