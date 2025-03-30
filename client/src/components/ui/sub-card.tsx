@@ -175,14 +175,10 @@ export default function SubCard({ sub, hasVideo = false, videoSrc, onUploadClick
               style={{ display: videoLoaded && !videoError ? 'block' : 'none' }}
               onPlay={() => setIsPlaying(true)}
               onPause={() => setIsPlaying(false)}
+              src={videoSrc}
             >
-              {videoSrc && <source src={videoSrc} type="video/mp4" />}
               Your browser does not support the video tag.
             </video>
-            {/* Debug info */}
-            <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1" style={{zIndex: 30}}>
-              HasVideo: {String(hasVideo)}, videoSrc: {videoSrc ? 'exists' : 'none'}, loaded: {String(videoLoaded)}
-            </div>
           </>
         ) : (
           sub.avatarUrl ? (

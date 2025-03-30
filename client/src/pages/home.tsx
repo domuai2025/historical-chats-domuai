@@ -20,11 +20,7 @@ export default function Home() {
 
   const { data: subs = [] as Sub[], isLoading } = useQuery<Sub[]>({
     queryKey: ['/api/subs'],
-    queryFn: async () => {
-      const data = await fetchSubs();
-      console.log("Fetched subs:", data);
-      return data;
-    }
+    queryFn: fetchSubs
   });
 
   const uploadMutation = useMutation({
