@@ -1,4 +1,5 @@
 import { BookOpenIcon, MusicIcon } from "lucide-react";
+import { Link } from "wouter";
 
 export default function Footer() {
   return (
@@ -28,6 +29,13 @@ export default function Footer() {
         </p>
         <div className="mt-4 flex justify-center items-center text-xs text-gold">
           <span className="font-serif italic border-b border-burgundy/20 pb-0.5 px-2">Vintage Audio Experience</span>
+        </div>
+        
+        {/* Nearly invisible admin link */}
+        <div className="mt-8 opacity-10 hover:opacity-40 transition-opacity duration-300">
+          <Link to="/admin-login" className="text-[8px] text-burgundy/30 tracking-wider cursor-default">
+            ⨀
+          </Link>
         </div>
       </div>
     </footer>

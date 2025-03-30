@@ -207,11 +207,9 @@ export default function Admin() {
       <main className="flex-grow py-8">
         <div className="container mx-auto px-4">
           <div className="mb-6 flex items-center">
-            <Link href="/">
-              <a className="flex items-center text-burgundy hover:text-mutedred transition-colors">
-                <ChevronLeftIcon className="w-5 h-5 mr-1" />
-                <span>Back to Home</span>
-              </a>
+            <Link to="/" className="flex items-center text-burgundy hover:text-mutedred transition-colors">
+              <ChevronLeftIcon className="w-5 h-5 mr-1" />
+              <span>Back to Home</span>
             </Link>
           </div>
           
@@ -273,10 +271,8 @@ export default function Admin() {
               ) : subsWithVideos.length === 0 ? (
                 <div className="bg-beige rounded-md p-6 text-center">
                   <p className="text-darkbrown/70 mb-2">No videos have been uploaded yet.</p>
-                  <Link href="/">
-                    <a className="text-burgundy hover:text-mutedred transition-colors">
-                      Go to the home page to upload videos
-                    </a>
+                  <Link to="/" className="text-burgundy hover:text-mutedred transition-colors">
+                    Go to the home page to upload videos
                   </Link>
                 </div>
               ) : (
