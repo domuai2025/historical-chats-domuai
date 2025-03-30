@@ -113,23 +113,13 @@ export default function SubCard({ sub, hasVideo = false, videoSrc, onUploadClick
         {hasVideo ? (
           <>
             <div 
-              className={`absolute inset-0 z-10 flex items-center justify-center bg-burgundy/20 transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'}`}
+              className={`absolute bottom-2 right-2 z-10 flex items-center justify-center transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'}`}
               onClick={handlePlayPause}
             >
               {!videoLoaded && !videoError && (
                 <div className="flex items-center justify-center">
-                  <div className="h-12 w-12 animate-spin rounded-full border-4 border-white border-t-transparent"></div>
+                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-white border-t-transparent"></div>
                 </div>
-              )}
-              
-              {videoLoaded && !videoError && (
-                <Button 
-                  variant="outline" 
-                  size="icon" 
-                  className="h-14 w-14 rounded-full border-2 border-cream bg-burgundy/60 text-cream hover:bg-burgundy"
-                >
-                  {isPlaying ? <PauseCircle size={24} /> : <Play size={24} />}
-                </Button>
               )}
             </div>
             
@@ -178,8 +168,8 @@ export default function SubCard({ sub, hasVideo = false, videoSrc, onUploadClick
               poster={sub.avatarUrl || ''}
               autoPlay={isPlaying}
               loop
-              muted
               playsInline
+              controls
               onLoadedData={handleVideoLoad}
               onError={handleVideoError}
               style={{ display: videoLoaded && !videoError ? 'block' : 'none' }}

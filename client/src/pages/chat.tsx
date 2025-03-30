@@ -145,6 +145,15 @@ export default function Chat() {
                 <span className="inline-block animate-pulse mr-1">🔴</span> 
                 <span className="font-bold">LIVE VIDEO AVATAR</span>
               </h3>
+              <div className="flex items-center justify-center gap-2 mt-1 mb-2">
+                <div className="w-6 h-6 rounded-full flex items-center justify-center bg-burgundy text-cream font-bold text-xs">
+                  {subInitials}
+                </div>
+                <div>
+                  <h4 className="text-burgundy font-serif text-sm">{sub.name}</h4>
+                  <p className="text-darkbrown/70 text-xs font-serif italic">{sub.title}</p>
+                </div>
+              </div>
             </div>
             {sub.videoUrl ? (
               <div className="relative rounded-lg overflow-hidden border-4 border-gold/50 shadow-xl bg-black/10">
@@ -161,17 +170,7 @@ export default function Chat() {
                 >
                   Your browser does not support the video tag.
                 </video>
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center bg-burgundy text-cream font-bold">
-                      {subInitials}
-                    </div>
-                    <div>
-                      <h3 className="text-cream font-serif text-sm">{sub.name}</h3>
-                      <p className="text-cream/70 text-xs font-serif italic">{sub.title}</p>
-                    </div>
-                  </div>
-                </div>
+                {/* Video info now shows above the video instead of overlaying it */}
               </div>
             ) : (
               <div className="relative rounded-lg overflow-hidden border-4 border-gold/50 shadow-xl bg-burgundy/10 h-40 flex flex-col items-center justify-center">
