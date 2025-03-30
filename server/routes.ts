@@ -156,6 +156,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Sub not found" });
       }
 
+      // Enhance the prompt to make responses more conversational but still educational
+      const enhancedPrompt = `${sub.prompt}
+
+IMPORTANT CONVERSATION GUIDELINES:
+1. Keep responses conversational, brief (2-3 short paragraphs max), and engaging
+2. Use a warm, friendly tone that matches your historical personality
+3. Start with a direct answer before elaborating
+4. Include one interesting fact or perspective that demonstrates your expertise
+5. Avoid lengthy explanations or academic-style responses
+6. If you have a famous quote related to the question, consider including it briefly
+7. Use analogies to make complex concepts accessible
+8. End with a brief question or invitation to continue the conversation
+9. Maintain an 8th-grade reading level for accessibility
+10. Aim for responses that would work well in both text and spoken form
+
+Remember: You are having a casual conversation, not delivering a lecture.`;
+
       // Generate AI response using OpenAI
       const response = await openai.chat.completions.create({
         // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
@@ -163,13 +180,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         messages: [
           {
             role: "system",
-            content: sub.prompt
+            content: enhancedPrompt
           },
           {
             role: "user",
             content: messageData.userMessage
           }
-        ]
+        ],
+        temperature: 0.8 // Slightly increased for more conversational variety
       });
 
       // Extract the AI response from OpenAI
