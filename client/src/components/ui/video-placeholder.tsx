@@ -72,18 +72,63 @@ export default function VideoPlaceholder({ videoUrl, bgColor = "#7D2B35" }: Vide
   // Handle video loaded event to capture the first frame
   const handleVideoLoaded = () => {
     if (!videoLoaded && videoRef.current) {
-      // Small timeout to ensure video has properly loaded its first frame
-      setTimeout(() => {
+      // Need to ensure the video is at the beginning and ready to extract the frame
+      if (videoRef.current.readyState >= 2) { // HAVE_CURRENT_DATA or better
         captureFirstFrame();
         setVideoLoaded(true);
-      }, 100);
+      } else {
+        // If not ready yet, try again in a moment
+        setTimeout(handleVideoLoaded, 100);
+      }
     }
   };
 
+  // Force video to load its metadata for thumbnail generation
   useEffect(() => {
-    // When videoUrl changes, reset the videoLoaded state
+    // When videoUrl changes, reset states and try to load the video
     if (videoUrl) {
       setVideoLoaded(false);
+      setThumbnailUrl(null);
+      
+      // Create a temporary video element to load the first frame
+      const tempVideo = document.createElement('video');
+      tempVideo.crossOrigin = 'anonymous';
+      tempVideo.src = encodeURI(videoUrl);
+      tempVideo.muted = true;
+      tempVideo.preload = 'metadata';
+      
+      // Only need to load metadata to get the first frame
+      tempVideo.addEventListener('loadeddata', function() {
+        if (videoRef.current && canvasRef.current) {
+          const canvas = canvasRef.current;
+          canvas.width = tempVideo.videoWidth;
+          canvas.height = tempVideo.videoHeight;
+          
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            // Set current time to 0 to ensure we get the first frame
+            tempVideo.currentTime = 0;
+            
+            // Wait a short time to ensure frame is available
+            setTimeout(() => {
+              ctx.drawImage(tempVideo, 0, 0, canvas.width, canvas.height);
+              try {
+                const dataUrl = canvas.toDataURL('image/jpeg');
+                setThumbnailUrl(dataUrl);
+                setVideoLoaded(true);
+              } catch (e) {
+                console.error("Error creating thumbnail:", e);
+              }
+              
+              // Clean up
+              tempVideo.src = '';
+            }, 200);
+          }
+        }
+      });
+      
+      // Start loading
+      tempVideo.load();
     }
   }, [videoUrl]);
 
