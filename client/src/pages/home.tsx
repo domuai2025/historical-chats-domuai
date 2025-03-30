@@ -183,37 +183,35 @@ export default function Home() {
                 
                 {/* Educational symbols at cardinal points */}
                 <g className="time-artifacts">
-                  {/* Book at North */}
+                  {/* Music Note at North */}
                   <g transform="translate(60, 34)" className="artifact-north">
-                    <rect x="-6" y="-7" width="12" height="14" fill="#7D2B35" />
-                    <line x1="-6" y1="-5" x2="6" y2="-5" stroke="#F5EDD7" strokeWidth="1" />
-                    <line x1="-6" y1="-2" x2="6" y2="-2" stroke="#F5EDD7" strokeWidth="1" />
-                    <line x1="-6" y1="1" x2="6" y2="1" stroke="#F5EDD7" strokeWidth="1" />
-                    <line x1="-6" y1="4" x2="6" y2="4" stroke="#F5EDD7" strokeWidth="1" />
+                    <ellipse cx="0" cy="4" rx="4.5" ry="4" fill="#7D2B35" />
+                    <path d="M4.5,4 L4.5,-8 L-4.5,-8 L-4.5,4" fill="none" stroke="#7D2B35" strokeWidth="2.5" strokeLinecap="round" />
+                    <line x1="-4.5" y1="-8" x2="4.5" y2="-8" stroke="#7D2B35" strokeWidth="2.5" strokeLinecap="round" />
                   </g>
 
-                  {/* Scroll at East */}
+                  {/* Math formula (E=mc²) at East */}
                   <g transform="translate(86, 60)" className="artifact-east">
-                    <path d="M-6,-6 C-5,-7 -2,-7 0,-6 C2,-7 5,-7 6,-6 L6,6 C5,5 2,5 0,6 C-2,5 -5,5 -6,6 Z" fill="#7D2B35" />
-                    <line x1="-4" y1="-3" x2="4" y2="-3" stroke="#F5EDD7" strokeWidth="0.75" />
-                    <line x1="-4" y1="0" x2="4" y2="0" stroke="#F5EDD7" strokeWidth="0.75" />
-                    <line x1="-4" y1="3" x2="4" y2="3" stroke="#F5EDD7" strokeWidth="0.75" />
+                    <rect x="-7" y="-6" width="14" height="12" fill="#7D2B35" rx="2" />
+                    <text x="0" y="0" textAnchor="middle" fill="#F5EDD7" fontSize="7" fontWeight="bold" dominantBaseline="middle">E=mc²</text>
                   </g>
 
-                  {/* Greek column at South */}
+                  {/* Movie camera at South */}
                   <g transform="translate(60, 86)" className="artifact-south">
-                    <rect x="-4" y="-7" width="8" height="14" fill="#7D2B35" />
-                    <rect x="-5" y="-8" width="10" height="1.5" fill="#7D2B35" />
-                    <rect x="-5" y="6.5" width="10" height="1.5" fill="#7D2B35" />
-                    <line x1="-3" y1="-6" x2="-3" y2="6" stroke="#F5EDD7" strokeWidth="0.5" />
-                    <line x1="0" y1="-6" x2="0" y2="6" stroke="#F5EDD7" strokeWidth="0.5" />
-                    <line x1="3" y1="-6" x2="3" y2="6" stroke="#F5EDD7" strokeWidth="0.5" />
+                    <rect x="-6" y="-5" width="12" height="10" fill="#7D2B35" rx="1" />
+                    <circle cx="0" cy="0" r="3.5" fill="none" stroke="#F5EDD7" strokeWidth="1" />
+                    <circle cx="0" cy="0" r="1.5" fill="#F5EDD7" />
+                    <rect x="6" y="-3" width="3" height="6" fill="#7D2B35" />
+                    <rect x="-9" y="-3" width="3" height="6" fill="#7D2B35" />
                   </g>
 
-                  {/* Music note at West */}
+                  {/* Podium/Lectern at West */}
                   <g transform="translate(34, 60)" className="artifact-west">
-                    <path d="M-2,-7 L4,-7 L4,0 C4,3.5 -2,3.5 -2,0 Z" fill="#7D2B35" />
-                    <line x1="4" y1="-7" x2="6" y2="-8" stroke="#7D2B35" strokeWidth="1.5" />
+                    <path d="M-5,-5 L5,-5 L4,5 L-4,5 Z" fill="#7D2B35" />
+                    <rect x="-6" y="-6.5" width="12" height="2" fill="#7D2B35" />
+                    <line x1="-3" y1="-2.5" x2="3" y2="-2.5" stroke="#F5EDD7" strokeWidth="1" />
+                    <line x1="-3" y1="0" x2="3" y2="0" stroke="#F5EDD7" strokeWidth="1" />
+                    <line x1="-3" y1="2.5" x2="3" y2="2.5" stroke="#F5EDD7" strokeWidth="1" />
                   </g>
                 </g>
                 

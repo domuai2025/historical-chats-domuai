@@ -120,36 +120,35 @@ export default function Header() {
                 
                 {/* Educational symbols around the edge */}
                 <g className="time-artifacts">
-                  {/* Book at North */}
+                  {/* Music Note at North */}
                   <g transform="translate(60, 34)">
-                    <rect x="-5" y="-6" width="10" height="12" fill="#7D2B35" />
-                    <line x1="-5" y1="-4" x2="5" y2="-4" stroke="#F5EDD7" strokeWidth="1" />
-                    <line x1="-5" y1="-1" x2="5" y2="-1" stroke="#F5EDD7" strokeWidth="1" />
-                    <line x1="-5" y1="2" x2="5" y2="2" stroke="#F5EDD7" strokeWidth="1" />
+                    <ellipse cx="0" cy="3" rx="3.5" ry="3" fill="#7D2B35" />
+                    <path d="M3.5,3 L3.5,-6 L-3.5,-6 L-3.5,3" fill="none" stroke="#7D2B35" strokeWidth="2" strokeLinecap="round" />
+                    <line x1="-3.5" y1="-6" x2="3.5" y2="-6" stroke="#7D2B35" strokeWidth="2" strokeLinecap="round" />
                   </g>
 
-                  {/* Scroll at East */}
+                  {/* Math formula (E=mc²) at East */}
                   <g transform="translate(86, 60)">
-                    <path d="M-5,-5 C-4,-6 -2,-6 0,-5 C2,-6 4,-6 5,-5 L5,5 C4,4 2,4 0,5 C-2,4 -4,4 -5,5 Z" fill="#7D2B35" />
-                    <line x1="-3" y1="-2" x2="3" y2="-2" stroke="#F5EDD7" strokeWidth="0.75" />
-                    <line x1="-3" y1="0" x2="3" y2="0" stroke="#F5EDD7" strokeWidth="0.75" />
-                    <line x1="-3" y1="2" x2="3" y2="2" stroke="#F5EDD7" strokeWidth="0.75" />
+                    <rect x="-6" y="-5" width="12" height="10" fill="#7D2B35" rx="1" />
+                    <text x="0" y="0" textAnchor="middle" fill="#F5EDD7" fontSize="6" fontWeight="bold" dominantBaseline="middle">E=mc²</text>
                   </g>
 
-                  {/* Greek column at South */}
+                  {/* Movie camera at South */}
                   <g transform="translate(60, 86)">
-                    <rect x="-3" y="-7" width="6" height="14" fill="#7D2B35" />
-                    <rect x="-4" y="-8" width="8" height="1.5" fill="#7D2B35" />
-                    <rect x="-4" y="6.5" width="8" height="1.5" fill="#7D2B35" />
-                    <line x1="-3" y1="-6" x2="-3" y2="6" stroke="#F5EDD7" strokeWidth="0.5" />
-                    <line x1="0" y1="-6" x2="0" y2="6" stroke="#F5EDD7" strokeWidth="0.5" />
-                    <line x1="3" y1="-6" x2="3" y2="6" stroke="#F5EDD7" strokeWidth="0.5" />
+                    <rect x="-5" y="-4" width="10" height="8" fill="#7D2B35" rx="1" />
+                    <circle cx="0" cy="0" r="2.5" fill="none" stroke="#F5EDD7" strokeWidth="0.75" />
+                    <circle cx="0" cy="0" r="1" fill="#F5EDD7" />
+                    <rect x="5" y="-2" width="2" height="4" fill="#7D2B35" />
+                    <rect x="-7" y="-2" width="2" height="4" fill="#7D2B35" />
                   </g>
 
-                  {/* Music note at West */}
+                  {/* Podium/Lectern at West */}
                   <g transform="translate(34, 60)">
-                    <path d="M-1,-6 L3,-6 L3,0 C3,3 -1,3 -1,0 Z" fill="#7D2B35" />
-                    <line x1="3" y1="-6" x2="5" y2="-7" stroke="#7D2B35" strokeWidth="1.5" />
+                    <path d="M-4,-4 L4,-4 L3,4 L-3,4 Z" fill="#7D2B35" />
+                    <rect x="-5" y="-5" width="10" height="1.5" fill="#7D2B35" />
+                    <line x1="-2" y1="-2" x2="2" y2="-2" stroke="#F5EDD7" strokeWidth="0.75" />
+                    <line x1="-2" y1="0" x2="2" y2="0" stroke="#F5EDD7" strokeWidth="0.75" />
+                    <line x1="-2" y1="2" x2="2" y2="2" stroke="#F5EDD7" strokeWidth="0.75" />
                   </g>
                 </g>
                 
