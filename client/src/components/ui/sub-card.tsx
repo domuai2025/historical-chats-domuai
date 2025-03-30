@@ -38,77 +38,67 @@ export default function SubCard({ sub, hasVideo = false, videoSrc, onUploadClick
     };
   }, [sub.id, registerPlayer, unregisterPlayer, videoLoaded]);
 
-  // Special handling for large videos
+  // Simplified handling for mobile devices - go back to basics
   useEffect(() => {
-    // Check if this is a large video using the context function
-    const hasLargeVideo = isLargeVideo(sub.id);
+    const isMobile = window.innerWidth < 768; 
     
     if (hasVideo && videoSrc && videoRef.current && !videoLoaded && !videoLoading && loadAttempts < 2) {
-      // For all videos, we'll do some basic loading management
       setVideoLoading(true);
       
       // Set timeout to ensure the video is properly initialized
       const timeoutId = setTimeout(() => {
         if (videoRef.current) {
-          // Load poster image first if we have one
+          // Always set poster image if available
           if (sub.avatarUrl) {
             videoRef.current.poster = sub.avatarUrl;
           }
           
-          // Force metadata loading with low priority for large videos
-          if (hasLargeVideo) {
+          // Extra simple loading for mobile - just show the poster quickly
+          if (isMobile) {
+            // On mobile, don't even try to load the video, just show the poster
             videoRef.current.preload = "none";
-          } else {
-            videoRef.current.preload = "metadata";
-          }
-          
-          // Always force loading to try to get at least metadata
-          videoRef.current.load();
-          
-          // Add more specific error handling
-          const errorHandler = () => {
-            console.warn(`Error loading video for ${sub.name} (ID: ${sub.id})`);
-            setVideoError(true);
-            setVideoLoading(false);
-            setLoadAttempts(prev => prev + 1);
-          };
-          
-          videoRef.current.addEventListener('error', errorHandler, { once: true });
-          
-          // On mobile, we'll show the video element anyway after a short delay
-          // This helps with some mobile browsers that don't trigger onLoad events properly
-          if (window.innerWidth < 768) {
+            
+            // Mark as loaded right away on mobile
             setTimeout(() => {
-              if (!videoLoaded && videoRef.current) {
-                // Just mark as loaded on mobile even if we just see the poster
-                setVideoLoaded(true);
-                setVideoLoading(false);
-              }
-            }, 1000);
+              setVideoLoaded(true);
+              setVideoLoading(false);
+            }, 100);
           } else {
-            // For desktop, we'll wait longer before giving up
+            // On desktop, actually try to load the video
+            videoRef.current.preload = "metadata";
+            videoRef.current.load();
+            
+            // Simple error handler
+            const errorHandler = () => {
+              console.warn(`Error loading video for ${sub.name} (ID: ${sub.id})`);
+              setVideoError(true);
+              setVideoLoading(false);
+            };
+            
+            videoRef.current.addEventListener('error', errorHandler, { once: true });
+            
+            // After 5 seconds, if still not loaded, show error state
             const failsafeTimeout = setTimeout(() => {
               if (!videoLoaded && videoRef.current) {
-                errorHandler();
+                setVideoLoaded(true); // Set to true so we can show the fallback
+                setVideoError(true);
+                setVideoLoading(false);
               }
-            }, 8000);
+            }, 5000);
             
             return () => {
               clearTimeout(failsafeTimeout);
+              if (videoRef.current) {
+                videoRef.current.removeEventListener('error', errorHandler);
+              }
             };
           }
-          
-          return () => {
-            if (videoRef.current) {
-              videoRef.current.removeEventListener('error', errorHandler);
-            }
-          };
         }
-      }, 500);
+      }, 100);
       
       return () => clearTimeout(timeoutId);
     }
-  }, [sub.id, sub.name, sub.avatarUrl, hasVideo, videoSrc, videoLoaded, videoLoading, loadAttempts, isLargeVideo]);
+  }, [sub.id, sub.name, sub.avatarUrl, hasVideo, videoSrc, videoLoaded, videoLoading, loadAttempts]);
   
   const handlePlayPause = () => {
     if (!videoLoaded && !videoError && hasVideo) {
@@ -238,12 +228,12 @@ export default function SubCard({ sub, hasVideo = false, videoSrc, onUploadClick
             
             <video 
               ref={videoRef}
-              className={`absolute inset-0 h-full w-full object-cover ${videoLoaded && !videoError ? '' : 'hidden'}`}
+              className="absolute inset-0 h-full w-full object-cover"
               poster={sub.avatarUrl || ''}
               autoPlay={isPlaying}
               loop
               playsInline
-              preload={isLargeVideo(sub.id) ? "none" : "metadata"}
+              preload="none" 
               muted={!isPlaying}
               controls
               onLoadedData={handleVideoLoad}

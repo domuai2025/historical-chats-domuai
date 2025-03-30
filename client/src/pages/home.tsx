@@ -372,42 +372,8 @@ export default function Home() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {subs.map((sub: Sub) => {
-                // For problematic large videos use the simpler fallback component
-                // Only use fallback on desktop - on mobile we'll show the standard component
-                // since mobile devices are less likely to have memory issues with video
-                const isProblematicVideo = [4, 14, 17].includes(sub.id);
-                
-                // We'll only use fallback on desktop and for problematic videos
-                if (isProblematicVideo && sub.videoUrl && !isMobile) {
-                  return (
-                    <div 
-                      key={sub.id}
-                      className="relative overflow-hidden rounded-md border border-gold/30 bg-cream transition-all duration-300 hover:shadow-md steampunk-card"
-                    >
-                      <FallbackVideo 
-                        subId={sub.id} 
-                        name={sub.name} 
-                        videoPath={sub.videoUrl} 
-                      />
-                      <div className="p-4">
-                        <h3 className="font-serif text-xl font-medium gold-shimmer-text">{sub.name}</h3>
-                        <p className="text-sm text-darkbrown/80 italic">{sub.title}</p>
-                        
-                        <div className="mt-4">
-                          <Link href={`/chat/${sub.id}`}>
-                            <Button 
-                              className="w-full bg-burgundy text-cream hover:bg-burgundy/90 gold-shimmer relative"
-                            >
-                              Start Conversation
-                            </Button>
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                }
-                
-                // Use normal SubCard for all other videos
+                // Use standard SubCard for all videos consistently
+                // This approach worked on mobile before
                 return (
                   <SubCard 
                     key={sub.id} 
