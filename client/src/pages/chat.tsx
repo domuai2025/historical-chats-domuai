@@ -111,9 +111,61 @@ export default function Chat() {
         </div>
       </header>
       
-      {/* Messages */}
+      {/* Messages with Video Avatar Display */}
       <div className="flex-grow overflow-y-auto p-4">
         <div className="container mx-auto max-w-4xl">
+          {/* Avatar Video Display */}
+          <div className="mb-6 mx-auto max-w-lg">
+            <div className="text-center mb-2">
+              <h3 className="font-serif text-burgundy text-sm">
+                <span className="inline-block animate-pulse mr-1">🔴</span> 
+                <span className="font-bold">LIVE VIDEO AVATAR</span>
+              </h3>
+            </div>
+            {sub.videoUrl ? (
+              <div className="relative rounded-lg overflow-hidden border-4 border-gold/50 shadow-xl bg-black/10">
+                <video 
+                  className="w-full aspect-video object-cover"
+                  src={sub.videoUrl}
+                  poster={sub.avatarUrl || undefined}
+                  controls
+                  loop
+                  autoPlay
+                  muted
+                  preload="metadata"
+                >
+                  Your browser does not support the video tag.
+                </video>
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center bg-burgundy text-cream font-bold">
+                      {subInitials}
+                    </div>
+                    <div>
+                      <h3 className="text-cream font-serif text-sm">{sub.name}</h3>
+                      <p className="text-cream/70 text-xs font-serif italic">{sub.title}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="relative rounded-lg overflow-hidden border-4 border-gold/50 shadow-xl bg-burgundy/10 h-40 flex flex-col items-center justify-center">
+                <div className="w-20 h-20 rounded-full flex items-center justify-center bg-burgundy text-cream text-2xl font-bold">
+                  {subInitials}
+                </div>
+                <p className="text-burgundy mt-2 font-serif text-center px-4">
+                  {sub.name}'s video will appear here
+                </p>
+              </div>
+            )}
+            <div className="text-center mt-2">
+              <p className="text-xs text-darkbrown/60 font-serif italic">
+                Coming soon: Live AI-generated responses with voice synthesis and animated avatars
+              </p>
+            </div>
+          </div>
+
+          {/* Conversation Messages */}
           {isLoadingMessages ? (
             <div className="text-center py-12">
               <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-burgundy border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
