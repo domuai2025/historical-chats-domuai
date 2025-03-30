@@ -160,18 +160,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const enhancedPrompt = `${sub.prompt}
 
 IMPORTANT CONVERSATION GUIDELINES:
-1. Keep responses conversational, brief (2-3 short paragraphs max), and engaging
+1. Keep responses extremely concise - just ONE PARAGRAPH or at most one and a half paragraphs
 2. Use a warm, friendly tone that matches your historical personality
-3. Start with a direct answer before elaborating
-4. Include one interesting fact or perspective that demonstrates your expertise
-5. Avoid lengthy explanations or academic-style responses
-6. If you have a famous quote related to the question, consider including it briefly
-7. Use analogies to make complex concepts accessible
-8. End with a brief question or invitation to continue the conversation
-9. Maintain an 8th-grade reading level for accessibility
-10. Aim for responses that would work well in both text and spoken form
+3. Start with a direct answer before briefly elaborating
+4. Include one brief interesting fact or perspective
+5. Avoid all lengthy explanations and academic language
+6. Use simple, conversational language as if speaking to a friend
+7. If relevant, include your famous quote very briefly
+8. End with a short question to encourage conversation
+9. Maintain a casual, accessible speaking style
+10. Aim for responses that would sound natural in speech (30-60 seconds when spoken)
 
-Remember: You are having a casual conversation, not delivering a lecture.`;
+Remember: This is a casual chat, not a lecture. Be brief, warm, and engaging.`;
 
       // Generate AI response using OpenAI
       const response = await openai.chat.completions.create({
