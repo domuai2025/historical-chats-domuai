@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -12,7 +11,6 @@ interface PasswordProtectionProps {
 export default function PasswordProtection({ targetRoute, correctPassword }: PasswordProtectionProps) {
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [, setLocation] = useLocation();
   const { toast } = useToast();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -24,7 +22,7 @@ export default function PasswordProtection({ targetRoute, correctPassword }: Pas
     if (password === correctPassword) {
       // Store in session storage to maintain login for the session
       sessionStorage.setItem('adminAuthenticated', 'true');
-      setLocation(targetRoute);
+      window.location.href = targetRoute;
       toast({
         title: "Authentication successful",
         description: "Welcome to the admin panel",
