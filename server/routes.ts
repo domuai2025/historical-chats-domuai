@@ -8,6 +8,7 @@ import fs from "fs/promises";
 import multer from "multer";
 import { fileURLToPath } from "url";
 import { insertSubSchema, insertMessageSchema } from "@shared/schema";
+import { generateVoiceResponse } from "./lib/elevenlabs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -193,20 +194,61 @@ Remember: This is a casual chat, not a lecture. Be brief, warm, and engaging.`;
       // Extract the AI response from OpenAI
       const aiResponse = response.choices[0].message.content || "I'm sorry, I couldn't generate a response.";
       
-      // Save the message with the AI response
+      // Generate audio version of the response using ElevenLabs
+      let audioUrl = '';
+      try {
+        audioUrl = await generateVoiceResponse(aiResponse, sub.name);
+        console.log(`Generated audio response for ${sub.name}: ${audioUrl}`);
+      } catch (audioError) {
+        console.error('Error generating audio response:', audioError);
+        // Continue without audio if there's an error
+      }
+      
+      // Save the message with the AI response and audio URL
       const completeMessage = {
         ...messageData,
-        aiResponse
+        aiResponse,
+        audioUrl // The schema doesn't have this field yet, but it will be stored
       };
       
       const savedMessage = await storage.createMessage(completeMessage);
-      res.status(201).json(savedMessage);
+      
+      // Add the audio URL to the response
+      const responseWithAudio = {
+        ...savedMessage,
+        audioUrl
+      };
+      
+      res.status(201).json(responseWithAudio);
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid message data", errors: error.errors });
       }
       console.error("Error sending message:", error);
       res.status(500).json({ message: "Failed to send message" });
+    }
+  });
+  
+  // GET generate audio for text
+  app.get('/api/voice', async (req, res) => {
+    try {
+      const text = req.query.text as string;
+      const figureName = req.query.figure as string;
+      
+      if (!text || !figureName) {
+        return res.status(400).json({ message: "Missing required parameters: text and figure" });
+      }
+      
+      const audioUrl = await generateVoiceResponse(text, figureName);
+      
+      if (!audioUrl) {
+        return res.status(500).json({ message: "Failed to generate voice response" });
+      }
+      
+      res.json({ audioUrl });
+    } catch (error) {
+      console.error("Error generating voice:", error);
+      res.status(500).json({ message: "Failed to generate voice response" });
     }
   });
 

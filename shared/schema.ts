@@ -19,6 +19,7 @@ export const messages = pgTable("messages", {
   subId: integer("sub_id").notNull(),
   userMessage: text("user_message").notNull(),
   aiResponse: text("ai_response").notNull(),
+  audioUrl: text("audio_url"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

@@ -177,7 +177,13 @@ export class MemStorage implements IStorage {
   async createMessage(insertMessage: InsertMessage): Promise<Message> {
     const id = this.messageCurrentId++;
     const createdAt = new Date();
-    const message: Message = { ...insertMessage, id, createdAt };
+    // Make sure to handle the optional audioUrl field
+    const message: Message = { 
+      ...insertMessage, 
+      id, 
+      createdAt,
+      audioUrl: (insertMessage as any).audioUrl || null // Handle the audioUrl field if it exists
+    };
     this.messages.set(id, message);
     return message;
   }
