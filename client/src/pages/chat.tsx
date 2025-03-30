@@ -156,10 +156,10 @@ export default function Chat() {
               </div>
             </div>
             {sub.videoUrl ? (
-              <div className="relative rounded-lg overflow-hidden border-4 border-gold/50 shadow-xl bg-black/10">
+              <div className="relative rounded-lg overflow-hidden border-4 border-gold/50 shadow-xl bg-black/10" style={{ minHeight: '200px' }}>
                 <video 
                   ref={videoRef}
-                  className="w-full aspect-video object-cover"
+                  className="w-full h-auto"
                   src={sub.videoUrl}
                   poster={sub.avatarUrl || undefined}
                   controls
