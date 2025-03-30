@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'wouter';
 import { Play, PauseCircle } from 'lucide-react';
 import { ShareButton } from '@/components/ui/share-button';
 import { Sub } from '@shared/schema';
 import { Button } from '@/components/ui/button';
+import { useVideoPlayer } from '@/contexts/VideoPlayerContext';
 
 interface SubCardProps {
   sub: Sub;
@@ -18,14 +19,44 @@ export default function SubCard({ sub, hasVideo = false, videoSrc, onUploadClick
   const [showAudioWave, setShowAudioWave] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [videoError, setVideoError] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const { registerPlayer, unregisterPlayer, stopAllExcept } = useVideoPlayer();
   
   // Generate random wave bar heights for audio visualization
   const waveHeights = Array.from({ length: 5 }, () => Math.floor(Math.random() * 20) + 10);
+  
+  // Register and unregister the video player with the context
+  useEffect(() => {
+    if (videoRef.current) {
+      registerPlayer(sub.id, videoRef.current);
+    }
+    
+    return () => {
+      unregisterPlayer(sub.id);
+    };
+  }, [sub.id, registerPlayer, unregisterPlayer, videoLoaded]);
   
   const handlePlayPause = () => {
     if (!videoLoaded && !videoError && hasVideo) {
       return; // Don't allow play/pause while video is loading
     }
+    
+    if (!isPlaying) {
+      // Stop all other videos before playing this one
+      stopAllExcept(sub.id);
+      
+      // Play this video
+      if (videoRef.current) {
+        videoRef.current.play()
+          .catch(err => console.error("Error playing video:", err));
+      }
+    } else {
+      // Pause this video
+      if (videoRef.current) {
+        videoRef.current.pause();
+      }
+    }
+    
     setIsPlaying(!isPlaying);
   };
   
@@ -142,6 +173,7 @@ export default function SubCard({ sub, hasVideo = false, videoSrc, onUploadClick
             )}
             
             <video 
+              ref={videoRef}
               className={`absolute inset-0 h-full w-full object-cover ${videoLoaded && !videoError ? '' : 'hidden'}`}
               poster={sub.avatarUrl || ''}
               autoPlay={isPlaying}
@@ -151,6 +183,8 @@ export default function SubCard({ sub, hasVideo = false, videoSrc, onUploadClick
               onLoadedData={handleVideoLoad}
               onError={handleVideoError}
               style={{ display: videoLoaded && !videoError ? 'block' : 'none' }}
+              onPlay={() => setIsPlaying(true)}
+              onPause={() => setIsPlaying(false)}
             >
               {videoSrc && <source src={videoSrc} type="video/mp4" />}
               Your browser does not support the video tag.

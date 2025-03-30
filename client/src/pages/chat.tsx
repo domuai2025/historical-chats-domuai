@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import ChatMessage from "@/components/ui/chat-message";
 import { ShareButton } from "@/components/ui/share-button";
 import { SpeechToTextButton } from "@/components/ui/speech-to-text-button";
+import { useVideoPlayer } from "@/contexts/VideoPlayerContext";
 import type { Message } from "@shared/schema";
 
 export default function Chat() {
@@ -17,6 +18,8 @@ export default function Chat() {
   const { toast } = useToast();
   const [message, setMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const { registerPlayer, unregisterPlayer, stopAllExcept } = useVideoPlayer();
   
   const subId = params?.id;
   
@@ -62,6 +65,27 @@ export default function Chat() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+  
+  // Register and unregister the video player with the context
+  useEffect(() => {
+    if (videoRef.current && sub?.id) {
+      const playerId = parseInt(subId!);
+      registerPlayer(playerId, videoRef.current);
+      
+      return () => {
+        unregisterPlayer(playerId);
+      };
+    }
+  }, [sub, subId, registerPlayer, unregisterPlayer]);
+  
+  // Handler for video play event
+  const handleVideoPlay = () => {
+    if (subId) {
+      const playerId = parseInt(subId);
+      // Stop all other videos when this one starts playing
+      stopAllExcept(playerId);
+    }
+  };
   
   // Show loading state if data is not yet available
   if (isLoadingSub || !sub) {
@@ -125,14 +149,15 @@ export default function Chat() {
             {sub.videoUrl ? (
               <div className="relative rounded-lg overflow-hidden border-4 border-gold/50 shadow-xl bg-black/10">
                 <video 
+                  ref={videoRef}
                   className="w-full aspect-video object-cover"
                   src={sub.videoUrl}
                   poster={sub.avatarUrl || undefined}
                   controls
-                  loop
                   autoPlay
-                  muted
                   preload="metadata"
+                  playsInline
+                  onPlay={handleVideoPlay}
                 >
                   Your browser does not support the video tag.
                 </video>
