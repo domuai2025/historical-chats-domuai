@@ -9,6 +9,7 @@ import multer from "multer";
 import { fileURLToPath } from "url";
 import { insertSubSchema, insertMessageSchema } from "@shared/schema";
 import { generateVoiceResponse } from "./lib/elevenlabs";
+import { optimizeVideo, batchOptimizeExistingVideos } from "./lib/video-optimizer";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -285,18 +286,46 @@ Remember: This is a casual chat, not a lecture. Be brief, warm, and engaging.`;
           return res.status(404).json({ message: "Sub not found" });
         }
         
-        // Generate a relative URL to the video file
-        const videoUrl = `/uploads/${file.filename}`;
+        // Original video URL (as a fallback)
+        const originalVideoUrl = `/uploads/${file.filename}`;
         
-        // Update the sub with the video URL
-        const updatedSub = await storage.updateSub(subId, { videoUrl });
+        // Return early response to client
+        res.status(202).json({
+          ...sub,
+          videoUrl: originalVideoUrl,
+          optimizationStatus: 'processing'
+        });
         
-        if (!updatedSub) {
-          return res.status(500).json({ message: "Failed to update sub with video URL" });
+        try {
+          // Optimize the video asynchronously (don't wait for completion)
+          console.log(`Starting video optimization for ${file.filename}...`);
+          
+          // Full path to the uploaded file
+          const inputPath = path.join(uploadDir, file.filename);
+          
+          // Run video optimization
+          optimizeVideo(inputPath, {
+            maxWidth: 720,
+            videoBitrate: '800k',
+            audioBitrate: '128k',
+            deleteOriginal: false // Keep original as backup
+          }).then(async (optimizedVideoUrl) => {
+            console.log(`Video optimization complete: ${optimizedVideoUrl}`);
+            
+            // Update the sub with the optimized video URL
+            const updatedSub = await storage.updateSub(subId, { videoUrl: optimizedVideoUrl });
+            console.log(`Successfully updated Sub #${subId} with optimized video URL: ${optimizedVideoUrl}`);
+            
+            // At this point the client has already received a response,
+            // so we don't need to send another one
+          }).catch((optimizationError) => {
+            console.error('Video optimization failed:', optimizationError);
+            // If optimization fails, the original video URL is already set
+          });
+        } catch (optimizationSetupError) {
+          console.error('Failed to setup video optimization:', optimizationSetupError);
+          // The original video is already saved, so we can continue
         }
-        
-        console.log(`Successfully updated Sub #${subId} with video URL: ${videoUrl}`);
-        res.json(updatedSub);
       } catch (error) {
         console.error("Error processing video upload:", error);
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -307,6 +336,31 @@ Remember: This is a casual chat, not a lecture. Be brief, warm, and engaging.`;
 
   // Serve uploaded videos
   app.use('/uploads', express.static(uploadDir));
+  
+  // POST endpoint to optimize all existing videos
+  app.post('/api/admin/optimize-videos', async (req, res) => {
+    try {
+      console.log('Starting batch video optimization...');
+      
+      // Start optimization in the background
+      batchOptimizeExistingVideos().then(async (optimizedVideos) => {
+        console.log(`Batch optimization complete. Optimized ${optimizedVideos.length} videos.`);
+        
+        // No need to send another response here as client has already received one
+      }).catch((error) => {
+        console.error('Batch optimization failed:', error);
+      });
+      
+      // Send immediate response
+      res.status(202).json({ 
+        message: 'Video optimization started in the background',
+        status: 'processing'
+      });
+    } catch (error) {
+      console.error('Error starting batch optimization:', error);
+      res.status(500).json({ message: 'Failed to start video optimization' });
+    }
+  });
 
   // Initialize the storage with initial subs data if empty
   await storage.initializeData();

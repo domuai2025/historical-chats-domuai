@@ -82,3 +82,39 @@ export const uploadVideo = async (subId: string, formData: FormData) => {
     throw new Error(error.message || 'Failed to upload video');
   }
 };
+
+// Admin endpoints
+export const optimizeAllVideos = async () => {
+  try {
+    const response = await fetch('/api/admin/optimize-videos', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    });
+    
+    if (!response.ok) {
+      let errorMessage = 'Failed to start video optimization';
+      
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorMessage;
+      } catch (e) {
+        try {
+          const errorText = await response.text();
+          if (errorText) errorMessage = errorText;
+        } catch (e2) {
+          // Use default error message if both fail
+        }
+      }
+      
+      throw new Error(errorMessage);
+    }
+    
+    return response.json();
+  } catch (error: any) {
+    console.error('Video optimization error:', error);
+    throw new Error(error.message || 'Failed to optimize videos');
+  }
+};

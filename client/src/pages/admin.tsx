@@ -3,14 +3,84 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
-import { fetchSubs, deleteSub } from "@/lib/api";
+import { fetchSubs, deleteSub, optimizeAllVideos } from "@/lib/api";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ChevronLeftIcon, Trash2Icon, PlayCircleIcon, FilmIcon } from "lucide-react";
+import { ChevronLeftIcon, Trash2Icon, PlayCircleIcon, FilmIcon, ZapIcon, SettingsIcon } from "lucide-react";
+
+// Define types for the subs
+interface Sub {
+  id: number;
+  name: string;
+  title: string;
+  videoUrl: string | null;
+  [key: string]: any; // For any other properties
+}
+
+// Optimize Videos Button Component
+function OptimizeVideosButton() {
+  const { toast } = useToast();
+  const [optimizationStarted, setOptimizationStarted] = useState(false);
+  
+  const optimizeMutation = useMutation({
+    mutationFn: optimizeAllVideos,
+    onSuccess: (data) => {
+      toast({
+        title: "Optimization Started",
+        description: "Video optimization is running in the background. This may take several minutes.",
+      });
+      setOptimizationStarted(true);
+      
+      // Reset the button after 30 seconds
+      setTimeout(() => {
+        setOptimizationStarted(false);
+      }, 30000);
+    },
+    onError: (error) => {
+      toast({
+        title: "Optimization Failed",
+        description: error.message || "Failed to start video optimization",
+        variant: "destructive",
+      });
+      setOptimizationStarted(false);
+    }
+  });
+  
+  const handleOptimize = () => {
+    optimizeMutation.mutate();
+  };
+  
+  return (
+    <Button 
+      variant="default"
+      size="lg"
+      className="bg-burgundy hover:bg-burgundy/90 text-cream shadow-gold-sm w-full md:w-auto"
+      onClick={handleOptimize}
+      disabled={optimizeMutation.isPending || optimizationStarted}
+    >
+      {optimizeMutation.isPending ? (
+        <>
+          <div className="inline-block h-4 w-4 mr-2 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
+          Starting optimization...
+        </>
+      ) : optimizationStarted ? (
+        <>
+          <ZapIcon className="w-4 h-4 mr-2" />
+          Optimization in progress...
+        </>
+      ) : (
+        <>
+          <ZapIcon className="w-4 h-4 mr-2" />
+          Optimize All Videos
+        </>
+      )}
+    </Button>
+  );
+}
 
 export default function Admin() {
   const { toast } = useToast();
@@ -19,7 +89,7 @@ export default function Admin() {
   const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
   
-  const { data: subs = [], isLoading } = useQuery({
+  const { data: subs = [], isLoading } = useQuery<Sub[]>({
     queryKey: ['/api/subs'],
     queryFn: fetchSubs
   });
@@ -66,7 +136,7 @@ export default function Admin() {
     }
   };
   
-  const subsWithVideos = subs.filter(sub => sub.videoUrl);
+  const subsWithVideos = subs.filter((sub: Sub) => sub.videoUrl);
   
   return (
     <div className="min-h-screen bg-cream flex flex-col">
@@ -83,12 +153,38 @@ export default function Admin() {
             </Link>
           </div>
           
+          {/* Video Optimization Card */}
+          <Card className="border-gold/30 shadow-vintage mb-8">
+            <CardHeader className="bg-burgundy/5">
+              <CardTitle className="text-2xl font-playfair text-burgundy">
+                <div className="flex items-center">
+                  <SettingsIcon className="w-5 h-5 mr-2" />
+                  Video Optimization Tools
+                </div>
+              </CardTitle>
+              <CardDescription className="text-darkbrown/70">
+                Optimize video files to reduce size and improve playback performance
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="bg-beige/50 rounded-md p-6 border border-gold/20">
+                <h3 className="text-lg font-medium text-darkbrown mb-3">Batch Video Optimization</h3>
+                <p className="text-darkbrown/80 mb-4">
+                  This process will optimize all uploaded videos to reduce file sizes while maintaining quality.
+                  Optimization runs in the background and may take several minutes depending on the number and size of videos.
+                </p>
+                <OptimizeVideosButton />
+              </div>
+            </CardContent>
+          </Card>
+          
+          {/* Video Management Card */}
           <Card className="border-gold/30 shadow-vintage mb-8">
             <CardHeader className="bg-burgundy/5">
               <CardTitle className="text-2xl font-playfair text-burgundy">
                 <div className="flex items-center">
                   <FilmIcon className="w-5 h-5 mr-2" />
-                  Admin Video Management
+                  Video Management
                 </div>
               </CardTitle>
             </CardHeader>
@@ -121,7 +217,7 @@ export default function Admin() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {subsWithVideos.map((sub) => (
+                      {subsWithVideos.map((sub: Sub) => (
                         <TableRow key={sub.id}>
                           <TableCell className="font-medium">{sub.name}</TableCell>
                           <TableCell>{sub.title}</TableCell>
