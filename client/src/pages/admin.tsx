@@ -6,7 +6,6 @@ import { Link } from "wouter";
 import { fetchSubs, deleteSub, optimizeAllVideos, cleanupStorage } from "@/lib/api";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import StorageStatsPanel from "@/components/admin/StorageStatsPanel";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -249,9 +248,7 @@ export default function Admin() {
             </CardContent>
           </Card>
           
-          {/* Storage Statistics Panel */}
-          <StorageStatsPanel />
-          
+
           {/* Video Management Card */}
           <Card className="border-gold/30 shadow-vintage mb-8">
             <CardHeader className="bg-burgundy/5">
