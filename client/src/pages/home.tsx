@@ -308,7 +308,9 @@ export default function Home() {
             
             <h1 className="font-serif text-burgundy text-4xl md:text-5xl mb-4">The Subs <span className="text-gold font-normal">AI</span><sup className="text-xs relative -top-3">™</sup></h1>
             
-            <p className="font-serif text-darkbrown italic mb-8 text-lg">Step back in time and engage with history's greatest minds</p>
+            <p className="font-serif text-darkbrown italic mb-4 text-lg">Step back in time and engage with history's greatest minds</p>
+            
+            <p className="text-darkbrown/70 text-xs italic font-serif mb-6">For educational purposes only. Provided by The Magdalena Foundation.</p>
             
             <div className="flex justify-center flex-wrap gap-8 mb-8">
               <div className="flex items-center text-sm text-darkbrown">
