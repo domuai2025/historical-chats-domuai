@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -17,7 +17,21 @@ import type { Sub } from "@shared/schema";
 export default function Home() {
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [selectedSubId, setSelectedSubId] = useState<number | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
   const { toast } = useToast();
+  
+  // Check for mobile device once when component loads
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+      console.log(`Device detection: ${window.innerWidth < 768 ? 'Mobile' : 'Desktop'} (width: ${window.innerWidth}px)`);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const { data: subs = [] as Sub[], isLoading } = useQuery<Sub[]>({
     queryKey: ['/api/subs'],
@@ -359,9 +373,12 @@ export default function Home() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {subs.map((sub: Sub) => {
                 // For problematic large videos use the simpler fallback component
+                // Only use fallback on desktop - on mobile we'll show the standard component
+                // since mobile devices are less likely to have memory issues with video
                 const isProblematicVideo = [4, 14, 17].includes(sub.id);
                 
-                if (isProblematicVideo && sub.videoUrl) {
+                // We'll only use fallback on desktop and for problematic videos
+                if (isProblematicVideo && sub.videoUrl && !isMobile) {
                   return (
                     <div 
                       key={sub.id}
