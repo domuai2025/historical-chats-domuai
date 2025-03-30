@@ -3,14 +3,15 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
-import { fetchSubs, deleteSub, optimizeAllVideos } from "@/lib/api";
+import { fetchSubs, deleteSub, optimizeAllVideos, cleanupStorage } from "@/lib/api";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import StorageStatsPanel from "@/components/admin/StorageStatsPanel";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ChevronLeftIcon, Trash2Icon, PlayCircleIcon, FilmIcon, ZapIcon, SettingsIcon } from "lucide-react";
+import { ChevronLeftIcon, Trash2Icon, PlayCircleIcon, FilmIcon, ZapIcon, SettingsIcon, ArchiveIcon, FolderIcon } from "lucide-react";
 
 // Define types for the subs
 interface Sub {
@@ -76,6 +77,67 @@ function OptimizeVideosButton() {
         <>
           <ZapIcon className="w-4 h-4 mr-2" />
           Optimize All Videos
+        </>
+      )}
+    </Button>
+  );
+}
+
+// Cleanup Storage Button Component
+function CleanupStorageButton() {
+  const { toast } = useToast();
+  const [cleanupStarted, setCleanupStarted] = useState(false);
+  
+  const cleanupMutation = useMutation({
+    mutationFn: cleanupStorage,
+    onSuccess: (data) => {
+      toast({
+        title: "Storage Cleanup Started",
+        description: "Storage cleanup and maintenance is running in the background. This may take a few minutes.",
+      });
+      setCleanupStarted(true);
+      
+      // Reset the button after 20 seconds
+      setTimeout(() => {
+        setCleanupStarted(false);
+      }, 20000);
+    },
+    onError: (error) => {
+      toast({
+        title: "Cleanup Failed",
+        description: error.message || "Failed to start storage cleanup",
+        variant: "destructive",
+      });
+      setCleanupStarted(false);
+    }
+  });
+  
+  const handleCleanup = () => {
+    cleanupMutation.mutate();
+  };
+  
+  return (
+    <Button 
+      variant="default"
+      size="lg"
+      className="bg-burgundy hover:bg-burgundy/90 text-cream shadow-gold-sm w-full md:w-auto"
+      onClick={handleCleanup}
+      disabled={cleanupMutation.isPending || cleanupStarted}
+    >
+      {cleanupMutation.isPending ? (
+        <>
+          <div className="inline-block h-4 w-4 mr-2 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
+          Starting cleanup...
+        </>
+      ) : cleanupStarted ? (
+        <>
+          <ArchiveIcon className="w-4 h-4 mr-2" />
+          Cleanup in progress...
+        </>
+      ) : (
+        <>
+          <FolderIcon className="w-4 h-4 mr-2" />
+          Clean Up Storage
         </>
       )}
     </Button>
@@ -167,7 +229,7 @@ export default function Admin() {
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6">
-              <div className="bg-beige/50 rounded-md p-6 border border-gold/20">
+              <div className="bg-beige/50 rounded-md p-6 border border-gold/20 mb-6">
                 <h3 className="text-lg font-medium text-darkbrown mb-3">Batch Video Optimization</h3>
                 <p className="text-darkbrown/80 mb-4">
                   This process will optimize all uploaded videos to reduce file sizes while maintaining quality.
@@ -175,8 +237,20 @@ export default function Admin() {
                 </p>
                 <OptimizeVideosButton />
               </div>
+              
+              <div className="bg-beige/50 rounded-md p-6 border border-gold/20">
+                <h3 className="text-lg font-medium text-darkbrown mb-3">Storage Cleanup</h3>
+                <p className="text-darkbrown/80 mb-4">
+                  This process will clean up unused files, organize the uploads folder, and perform maintenance
+                  to optimize storage usage. The process runs in the background.
+                </p>
+                <CleanupStorageButton />
+              </div>
             </CardContent>
           </Card>
+          
+          {/* Storage Statistics Panel */}
+          <StorageStatsPanel />
           
           {/* Video Management Card */}
           <Card className="border-gold/30 shadow-vintage mb-8">

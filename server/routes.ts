@@ -362,6 +362,51 @@ Remember: This is a casual chat, not a lecture. Be brief, warm, and engaging.`;
     }
   });
 
+  // POST endpoint to clean up unused files
+  app.post('/api/admin/cleanup-storage', async (req, res) => {
+    try {
+      console.log('Starting storage cleanup...');
+      
+      // Import dynamically to avoid circular dependencies
+      const { performFullMaintenance } = await import('./lib/storage-cleanup');
+      
+      // Start cleanup in the background
+      performFullMaintenance().then(async (results) => {
+        console.log('Storage maintenance complete:', results);
+        
+        // No need to send another response here as client has already received one
+      }).catch((error) => {
+        console.error('Storage maintenance failed:', error);
+      });
+      
+      // Send immediate response
+      res.status(202).json({ 
+        message: 'Storage maintenance started in the background',
+        status: 'processing'
+      });
+    } catch (error) {
+      console.error('Error starting storage maintenance:', error);
+      res.status(500).json({ message: 'Failed to start storage maintenance' });
+    }
+  });
+  
+  // GET endpoint to get storage stats
+  app.get('/api/admin/storage-stats', async (req, res) => {
+    try {
+      console.log('Getting storage statistics...');
+      
+      // Import dynamically to avoid circular dependencies
+      const { getStorageStats } = await import('./lib/storage-stats');
+      
+      const stats = await getStorageStats();
+      
+      res.status(200).json(stats);
+    } catch (error) {
+      console.error('Error getting storage stats:', error);
+      res.status(500).json({ message: 'Failed to get storage statistics' });
+    }
+  });
+
   // Initialize the storage with initial subs data if empty
   await storage.initializeData();
 

@@ -118,3 +118,72 @@ export const optimizeAllVideos = async () => {
     throw new Error(error.message || 'Failed to optimize videos');
   }
 };
+
+export const cleanupStorage = async () => {
+  try {
+    const response = await fetch('/api/admin/cleanup-storage', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    });
+    
+    if (!response.ok) {
+      let errorMessage = 'Failed to start storage cleanup';
+      
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorMessage;
+      } catch (e) {
+        try {
+          const errorText = await response.text();
+          if (errorText) errorMessage = errorText;
+        } catch (e2) {
+          // Use default error message if both fail
+        }
+      }
+      
+      throw new Error(errorMessage);
+    }
+    
+    return response.json();
+  } catch (error: any) {
+    console.error('Storage cleanup error:', error);
+    throw new Error(error.message || 'Failed to clean up storage');
+  }
+};
+
+export const getStorageStats = async () => {
+  try {
+    const response = await fetch('/api/admin/storage-stats', {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    });
+    
+    if (!response.ok) {
+      let errorMessage = 'Failed to get storage statistics';
+      
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorMessage;
+      } catch (e) {
+        try {
+          const errorText = await response.text();
+          if (errorText) errorMessage = errorText;
+        } catch (e2) {
+          // Use default error message if both fail
+        }
+      }
+      
+      throw new Error(errorMessage);
+    }
+    
+    return response.json();
+  } catch (error: any) {
+    console.error('Storage stats error:', error);
+    throw new Error(error.message || 'Failed to get storage statistics');
+  }
+};
