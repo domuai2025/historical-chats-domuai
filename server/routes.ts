@@ -335,7 +335,14 @@ Remember: This is a casual chat, not a lecture. Be brief, warm, and engaging.`;
   });
 
   // Serve uploaded videos
-  app.use('/uploads', express.static(uploadDir));
+  console.log(`Serving upload directory from ${uploadDir}`);
+  app.use('/uploads', express.static(uploadDir, {
+    setHeaders: (res, path) => {
+      if (path.endsWith('.mp4')) {
+        res.setHeader('Content-Type', 'video/mp4');
+      }
+    }
+  }));
   
   // POST endpoint to optimize all existing videos
   app.post('/api/admin/optimize-videos', async (req, res) => {
@@ -387,6 +394,34 @@ Remember: This is a casual chat, not a lecture. Be brief, warm, and engaging.`;
     } catch (error) {
       console.error('Error starting storage maintenance:', error);
       res.status(500).json({ message: 'Failed to start storage maintenance' });
+    }
+  });
+  
+  // POST endpoint to generate thumbnails for all videos
+  app.post('/api/admin/generate-thumbnails', async (req, res) => {
+    try {
+      console.log('Starting thumbnail generation...');
+      
+      // Import dynamically to avoid circular dependencies
+      const { batchGenerateThumbnails } = await import('./lib/thumbnail-generator');
+      
+      // Start thumbnail generation in the background
+      batchGenerateThumbnails().then(async (thumbnails) => {
+        console.log(`Thumbnail generation complete. Generated ${thumbnails.length} thumbnails.`);
+        
+        // No need to send another response here as client has already received one
+      }).catch((error) => {
+        console.error('Thumbnail generation failed:', error);
+      });
+      
+      // Send immediate response
+      res.status(202).json({ 
+        message: 'Thumbnail generation started in the background',
+        status: 'processing'
+      });
+    } catch (error) {
+      console.error('Error starting thumbnail generation:', error);
+      res.status(500).json({ message: 'Failed to start thumbnail generation' });
     }
   });
   
