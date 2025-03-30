@@ -56,7 +56,7 @@
   animation: fadeIn 0.3s ease-out forwards;
 }
 
-/* Logo animations - Header and Main Page */
+/* Time Travel Logo Animations - Header and Main Page */
 .logo-container, .main-logo-container {
   position: relative;
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -64,41 +64,103 @@
 
 .logo-svg, .main-logo-svg {
   transition: all 0.3s ease;
+  filter: drop-shadow(0 0 5px rgba(125, 43, 53, 0.15));
 }
 
 .logo-outer-circle {
   animation: pulse 4s infinite alternate;
 }
 
-.logo-center {
-  animation: inner-pulse 5s infinite alternate;
-}
-
-/* Main page logo animations */
+/* Main page logo container effects */
 .main-logo-container {
-  animation: float-logo 6s ease-in-out infinite;
+  animation: float-logo 8s ease-in-out infinite;
 }
 
 .main-logo-svg {
-  filter: drop-shadow(0 0 8px rgba(125, 43, 53, 0.1));
+  filter: drop-shadow(0 0 10px rgba(125, 43, 53, 0.15));
 }
 
-.rotating-circle {
-  animation: rotate-circle 30s linear infinite;
+/* Time travel clock and compass animations */
+.time-runes, .rotating-circle {
+  animation: rotate-circle 60s linear infinite;
   transform-origin: center;
 }
 
 .rotating-symbols {
-  animation: rotate-symbols 80s linear infinite reverse;
+  animation: rotate-symbols 120s linear infinite reverse;
   transform-origin: center;
 }
 
+/* Clock hands animations for main logo */
+.main-hour-hand {
+  animation: rotate-hour 30s linear infinite reverse;
+  transform-origin: center;
+}
+
+.main-minute-hand {
+  animation: rotate-minute 10s linear infinite;
+  transform-origin: center;
+}
+
+.main-compass-needle {
+  animation: compass-oscillate 8s ease-in-out infinite;
+  transform-origin: center;
+}
+
+/* Spark effect animations */
+.time-spark {
+  animation: spark-pulse 2s infinite alternate;
+}
+
+.spark-0 { animation-delay: 0s; }
+.spark-1 { animation-delay: 0.25s; }
+.spark-2 { animation-delay: 0.5s; }
+.spark-3 { animation-delay: 0.75s; }
+.spark-4 { animation-delay: 1s; }
+.spark-5 { animation-delay: 1.25s; }
+.spark-6 { animation-delay: 1.5s; }
+.spark-7 { animation-delay: 1.75s; }
+
+/* Cardinal direction symbols in main logo */
+.artifact-north {
+  animation: artifact-glow 4s infinite alternate;
+  animation-delay: 0s;
+}
+
+.artifact-east {
+  animation: artifact-glow 4s infinite alternate;
+  animation-delay: 1s;
+}
+
+.artifact-south {
+  animation: artifact-glow 4s infinite alternate;
+  animation-delay: 2s;
+}
+
+.artifact-west {
+  animation: artifact-glow 4s infinite alternate;
+  animation-delay: 3s;
+}
+
+/* Center hub animations */
+.center-hub {
+  animation: hub-pulse 3s infinite alternate;
+}
+
+.center-hub-animated {
+  animation: hub-glow 1.5s infinite alternate;
+}
+
+/* Animation keyframes */
 @keyframes float-logo {
   0%, 100% {
-    transform: translateY(0);
+    transform: translateY(0) rotate(0deg);
   }
-  50% {
-    transform: translateY(-6px);
+  25% {
+    transform: translateY(-4px) rotate(-0.5deg);
+  }
+  75% {
+    transform: translateY(4px) rotate(0.5deg);
   }
 }
 
@@ -111,128 +173,124 @@
   }
 }
 
+@keyframes rotate-symbols {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes rotate-hour {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes rotate-minute {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes compass-oscillate {
+  0%, 100% {
+    transform: rotate(-30deg);
+  }
+  50% {
+    transform: rotate(30deg);
+  }
+}
+
 @keyframes pulse {
   0% {
     stroke-opacity: 0.7;
-    stroke-width: 4;
+    stroke-width: 3;
   }
   100% {
     stroke-opacity: 1;
-    stroke-width: 5;
+    stroke-width: 4;
   }
 }
 
-@keyframes inner-pulse {
+@keyframes spark-pulse {
   0% {
-    stroke-opacity: 0.5;
-    stroke-dasharray: 1 1;
+    opacity: 0.3;
+    r: 0.5;
   }
   100% {
-    stroke-opacity: 0.8;
-    stroke-dasharray: 0.5 2;
-  }
-}
-
-/* Educational symbols animations */
-.symbol-animated {
-  animation: float 1.5s ease-in-out infinite;
-  transform-origin: center;
-}
-
-.symbol-animated.symbol-1 {
-  animation-delay: 0s;
-}
-
-.symbol-animated.symbol-2 {
-  animation-delay: 0.2s;
-}
-
-.symbol-animated.symbol-3 {
-  animation-delay: 0.4s;
-}
-
-.symbol-animated.symbol-4 {
-  animation-delay: 0.6s;
-}
-
-/* Main logo symbol animations */
-.symbol-1 {
-  animation: pulse-symbol 3s infinite alternate;
-  animation-delay: 0s;
-  transform-origin: center;
-}
-
-.symbol-2 {
-  animation: pulse-symbol 3s infinite alternate;
-  animation-delay: 0.75s;
-  transform-origin: center;
-}
-
-.symbol-3 {
-  animation: pulse-symbol 3s infinite alternate;
-  animation-delay: 1.5s;
-  transform-origin: center;
-}
-
-.symbol-4 {
-  animation: pulse-symbol 3s infinite alternate;
-  animation-delay: 2.25s;
-  transform-origin: center;
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0) scale(1);
     opacity: 1;
-  }
-  50% {
-    transform: translateY(-2px) scale(1.05);
-    opacity: 0.9;
+    r: 1.5;
   }
 }
 
-@keyframes pulse-symbol {
+@keyframes artifact-glow {
+  0% {
+    opacity: 0.8;
+    filter: none;
+  }
+  100% {
+    opacity: 1;
+    filter: drop-shadow(0 0 1px #D4AF37);
+  }
+}
+
+@keyframes hub-pulse {
+  0% {
+    r: 5;
+    stroke-width: 1;
+  }
+  100% {
+    r: 6;
+    stroke-width: 1.5;
+  }
+}
+
+@keyframes hub-glow {
+  0% {
+    filter: drop-shadow(0 0 2px rgba(212, 175, 55, 0.3));
+  }
+  100% {
+    filter: drop-shadow(0 0 4px rgba(212, 175, 55, 0.7));
+  }
+}
+
+/* Clock ticks animations */
+.clock-ticks {
+  animation: ticks-fade 10s infinite alternate;
+}
+
+@keyframes ticks-fade {
   0% {
     opacity: 0.7;
-    transform: scale(0.95);
   }
   100% {
     opacity: 1;
-    transform: scale(1.05);
   }
 }
 
-/* Center symbol animation */
-.center-symbol-animated {
-  animation: glow 2s infinite alternate;
+/* Decorative rings animation */
+.decorative-ring, .inner-decorative-ring {
+  animation: ring-pulse 6s infinite alternate;
+  animation-delay: 1s;
 }
 
-.center-symbol {
-  animation: float-center 4s ease-in-out infinite;
-  transform-origin: center;
-}
-
-@keyframes float-center {
-  0%, 100% {
-    transform: translateY(0) scale(1);
-  }
-  50% {
-    transform: translateY(-1px) scale(1.03);
-  }
-}
-
-@keyframes glow {
+@keyframes ring-pulse {
   0% {
-    filter: drop-shadow(0 0 1px rgba(125, 43, 53, 0.1));
+    stroke-opacity: 0.2;
+    stroke-dasharray: 0;
   }
   100% {
-    filter: drop-shadow(0 0 3px rgba(125, 43, 53, 0.5));
+    stroke-opacity: 0.6;
+    stroke-dasharray: 1 2;
   }
-}
-
-/* Symbols container animation */
-.symbols-container {
-  transition: transform 1s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
 /* Card hover effect styles */

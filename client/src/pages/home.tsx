@@ -87,93 +87,223 @@ export default function Home() {
       <section className="bg-cream py-8 md:py-12">
         <div className="container mx-auto px-4 max-w-4xl">
           <div className="bg-beige border border-gold/20 rounded-lg p-6 md:p-10 text-center">
-            <div className="mx-auto w-32 h-32 mb-6 main-logo-container">
+            <div className="mx-auto w-40 h-40 mb-8 main-logo-container">
               <svg width="100%" height="100%" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="main-logo-svg">
-                {/* Outer circle with pulsing animation */}
+                {/* Outer circle with fancy border */}
                 <circle 
                   cx="60" 
                   cy="60" 
                   r="58" 
                   fill="#F5EDD7" 
                   stroke="#D4AF37" 
-                  strokeWidth="4"
+                  strokeWidth="3"
                   className="logo-outer-circle" 
                 />
                 
-                {/* Middle circle with rotating dashed line */}
+                {/* Elegant decorative outer ring */}
                 <circle 
                   cx="60" 
                   cy="60" 
-                  r="50" 
-                  fill="#F5EDD7" 
+                  r="54" 
+                  fill="none" 
                   stroke="#7D2B35" 
-                  strokeWidth="2" 
-                  strokeDasharray="2 3"
-                  className="logo-inner-circle rotating-circle" 
+                  strokeOpacity="0.4"
+                  strokeWidth="0.5"
+                  className="decorative-ring" 
                 />
                 
-                {/* Inner solid circle with logo background */}
+                {/* Clock face tick marks (hours) */}
+                <g className="clock-ticks">
+                  {[...Array(12)].map((_, i) => (
+                    <line 
+                      key={`hour-${i}`}
+                      x1="60" 
+                      y1="8" 
+                      x2="60" 
+                      y2="16" 
+                      stroke="#7D2B35" 
+                      strokeWidth="2" 
+                      transform={`rotate(${i * 30} 60 60)`} 
+                    />
+                  ))}
+                  
+                  {/* Minute marks - smaller ticks */}
+                  {[...Array(60)].map((_, i) => (
+                    (i % 5 !== 0) && (
+                      <line 
+                        key={`min-${i}`}
+                        x1="60" 
+                        y1="8" 
+                        x2="60" 
+                        y2="12" 
+                        stroke="#7D2B35" 
+                        strokeWidth="1" 
+                        strokeOpacity="0.5"
+                        transform={`rotate(${i * 6} 60 60)`} 
+                      />
+                    )
+                  ))}
+                </g>
+                
+                {/* Compass rose - cardinal directions */}
+                <g className="compass-rose">
+                  <text x="60" y="24" textAnchor="middle" fill="#7D2B35" fontSize="10" fontWeight="bold">N</text>
+                  <text x="97" y="63" textAnchor="middle" fill="#7D2B35" fontSize="10" fontWeight="bold">E</text>
+                  <text x="60" y="102" textAnchor="middle" fill="#7D2B35" fontSize="10" fontWeight="bold">S</text>
+                  <text x="24" y="63" textAnchor="middle" fill="#7D2B35" fontSize="10" fontWeight="bold">W</text>
+                </g>
+                
+                {/* Ornate time ring with roman numerals */}
+                <g className="time-numerals">
+                  <text x="60" y="32" textAnchor="middle" fill="#7D2B35" fontSize="6" fontWeight="normal">XII</text>
+                  <text x="74" y="38" textAnchor="middle" fill="#7D2B35" fontSize="6" fontWeight="normal">I</text>
+                  <text x="84" y="48" textAnchor="middle" fill="#7D2B35" fontSize="6" fontWeight="normal">II</text>
+                  <text x="90" y="62" textAnchor="middle" fill="#7D2B35" fontSize="6" fontWeight="normal">III</text>
+                  <text x="84" y="76" textAnchor="middle" fill="#7D2B35" fontSize="6" fontWeight="normal">IV</text>
+                  <text x="74" y="86" textAnchor="middle" fill="#7D2B35" fontSize="6" fontWeight="normal">V</text>
+                  <text x="60" y="92" textAnchor="middle" fill="#7D2B35" fontSize="6" fontWeight="normal">VI</text>
+                  <text x="46" y="86" textAnchor="middle" fill="#7D2B35" fontSize="6" fontWeight="normal">VII</text>
+                  <text x="36" y="76" textAnchor="middle" fill="#7D2B35" fontSize="6" fontWeight="normal">VIII</text>
+                  <text x="30" y="62" textAnchor="middle" fill="#7D2B35" fontSize="6" fontWeight="normal">IX</text>
+                  <text x="36" y="48" textAnchor="middle" fill="#7D2B35" fontSize="6" fontWeight="normal">X</text>
+                  <text x="46" y="38" textAnchor="middle" fill="#7D2B35" fontSize="6" fontWeight="normal">XI</text>
+                </g>
+                
+                {/* Inner ring with time runes */}
                 <circle 
                   cx="60" 
                   cy="60" 
-                  r="40" 
-                  fill="#F5EDD7" 
-                  stroke="#D4AF37" 
-                  strokeWidth="1.5"
-                  strokeDasharray="1 1"
-                  className="logo-center" 
+                  r="48" 
+                  fill="none" 
+                  stroke="#7D2B35" 
+                  strokeWidth="1.5" 
+                  strokeDasharray="1 3"
+                  className="time-runes rotating-circle" 
                 />
                 
-                {/* Educational symbols around the circle */}
-                <g className="symbols-container rotating-symbols">
-                  {/* Book symbol at 45 degrees */}
-                  <g 
-                    fill="#7D2B35" 
-                    className="symbol-1" 
-                    transform="translate(76, 32.5) rotate(45)"
-                  >
-                    <path d="M-6 -8 h12 v16 h-12 z" />
-                    <path d="M-6 -8 v16 M0 -8 v16 M6 -8 v16" />
+                {/* Educational symbols at cardinal points */}
+                <g className="time-artifacts">
+                  {/* Book at North */}
+                  <g transform="translate(60, 34)" className="artifact-north">
+                    <rect x="-6" y="-7" width="12" height="14" fill="#7D2B35" />
+                    <line x1="-6" y1="-5" x2="6" y2="-5" stroke="#F5EDD7" strokeWidth="1" />
+                    <line x1="-6" y1="-2" x2="6" y2="-2" stroke="#F5EDD7" strokeWidth="1" />
+                    <line x1="-6" y1="1" x2="6" y2="1" stroke="#F5EDD7" strokeWidth="1" />
+                    <line x1="-6" y1="4" x2="6" y2="4" stroke="#F5EDD7" strokeWidth="1" />
                   </g>
-                  
-                  {/* Theater masks at 135 degrees */}
-                  <g 
-                    fill="#7D2B35" 
-                    className="symbol-2" 
-                    transform="translate(32.5, 32.5) rotate(135)"
-                  >
-                    <path d="M-4 -6 a6 6 0 1 1 0 12 a6 6 0 1 1 0 -12 z" />
-                    <path d="M4 -6 a6 6 0 1 0 0 12 a6 6 0 1 0 0 -12 z" />
-                    <path d="M-6 -2 l12 0 M-5 2 l10 0" stroke="#7D2B35" strokeWidth="1.5" />
+
+                  {/* Scroll at East */}
+                  <g transform="translate(86, 60)" className="artifact-east">
+                    <path d="M-6,-6 C-5,-7 -2,-7 0,-6 C2,-7 5,-7 6,-6 L6,6 C5,5 2,5 0,6 C-2,5 -5,5 -6,6 Z" fill="#7D2B35" />
+                    <line x1="-4" y1="-3" x2="4" y2="-3" stroke="#F5EDD7" strokeWidth="0.75" />
+                    <line x1="-4" y1="0" x2="4" y2="0" stroke="#F5EDD7" strokeWidth="0.75" />
+                    <line x1="-4" y1="3" x2="4" y2="3" stroke="#F5EDD7" strokeWidth="0.75" />
                   </g>
-                  
-                  {/* Ancient Greek column at 225 degrees */}
-                  <g 
-                    fill="#7D2B35" 
-                    className="symbol-3" 
-                    transform="translate(32.5, 76) rotate(225)"
-                  >
-                    <rect x="-5" y="-8" width="10" height="2" rx="1" />
-                    <rect x="-4" y="-6" width="8" height="12" rx="0" />
-                    <rect x="-5" y="6" width="10" height="2" rx="1" />
-                    <path d="M-4 -6 v12 M0 -6 v12 M4 -6 v12" stroke="#7D2B35" strokeWidth="0.75" />
+
+                  {/* Greek column at South */}
+                  <g transform="translate(60, 86)" className="artifact-south">
+                    <rect x="-4" y="-7" width="8" height="14" fill="#7D2B35" />
+                    <rect x="-5" y="-8" width="10" height="1.5" fill="#7D2B35" />
+                    <rect x="-5" y="6.5" width="10" height="1.5" fill="#7D2B35" />
+                    <line x1="-3" y1="-6" x2="-3" y2="6" stroke="#F5EDD7" strokeWidth="0.5" />
+                    <line x1="0" y1="-6" x2="0" y2="6" stroke="#F5EDD7" strokeWidth="0.5" />
+                    <line x1="3" y1="-6" x2="3" y2="6" stroke="#F5EDD7" strokeWidth="0.5" />
                   </g>
-                  
-                  {/* Musical note at 315 degrees */}
-                  <g 
-                    fill="#7D2B35" 
-                    className="symbol-4" 
-                    transform="translate(76, 76) rotate(315)"
-                  >
-                    <path d="M-2 -8 h4 v8 a4 4 0 1 1 -4 0 z" />
+
+                  {/* Music note at West */}
+                  <g transform="translate(34, 60)" className="artifact-west">
+                    <path d="M-2,-7 L4,-7 L4,0 C4,3.5 -2,3.5 -2,0 Z" fill="#7D2B35" />
+                    <line x1="4" y1="-7" x2="6" y2="-8" stroke="#7D2B35" strokeWidth="1.5" />
                   </g>
                 </g>
                 
-                {/* Central quill pen */}
-                <g fill="#7D2B35" className="center-symbol">
-                  <path d="M60 50 Q63 40 66 44 L63 70 Q62 75 60 75 Q58 75 57 70 L54 44 Q57 40 60 50 z" />
-                  <path d="M55 70 L65 70" stroke="#7D2B35" strokeWidth="1.5" />
-                  <path d="M60 45 L60 55" stroke="#7D2B35" strokeWidth="0.75" strokeDasharray="1 1" />
+                {/* Clock mechanism - inner decorative elements */}
+                <circle 
+                  cx="60" 
+                  cy="60" 
+                  r="30" 
+                  fill="none" 
+                  stroke="#D4AF37" 
+                  strokeWidth="0.5"
+                  strokeDasharray="2 2"
+                  className="inner-decorative-ring" 
+                />
+                
+                {/* Time travel artifact symbols */}
+                <g className="time-travel-symbols rotating-symbols">
+                  <g transform="translate(60, 42)">
+                    <path d="M-2,-2 L2,-2 L0,-6 Z" fill="#7D2B35" opacity="0.7" />
+                  </g>
+                  <g transform="translate(78, 60)">
+                    <path d="M-2,-2 L-2,2 L2,0 Z" fill="#7D2B35" opacity="0.7" />
+                  </g>
+                  <g transform="translate(60, 78)">
+                    <path d="M-2,2 L2,2 L0,-2 Z" fill="#7D2B35" opacity="0.7" />
+                  </g>
+                  <g transform="translate(42, 60)">
+                    <path d="M2,-2 L2,2 L-2,0 Z" fill="#7D2B35" opacity="0.7" />
+                  </g>
+                </g>
+                
+                {/* Clock hands */}
+                <g className="clock-hands">
+                  {/* Hour hand */}
+                  <line 
+                    x1="60" 
+                    y1="60" 
+                    x2="60" 
+                    y2="30" 
+                    stroke="#7D2B35" 
+                    strokeWidth="3" 
+                    strokeLinecap="round"
+                    className="hour-hand main-hour-hand" 
+                  />
+                  
+                  {/* Minute hand */}
+                  <line 
+                    x1="60" 
+                    y1="60" 
+                    x2="60" 
+                    y2="22" 
+                    stroke="#D4AF37" 
+                    strokeWidth="2" 
+                    strokeLinecap="round"
+                    className="minute-hand main-minute-hand" 
+                  />
+                  
+                  {/* Compass needle */}
+                  <g className="compass-needle main-compass-needle">
+                    <path d="M60,60 L56,38 L60,32 L64,38 Z" fill="#7D2B35" />
+                    <path d="M60,60 L56,82 L60,88 L64,82 Z" fill="#D4AF37" />
+                  </g>
+                </g>
+                
+                {/* Central hub */}
+                <circle 
+                  cx="60" 
+                  cy="60" 
+                  r="6" 
+                  fill="#7D2B35" 
+                  stroke="#D4AF37" 
+                  strokeWidth="1"
+                  className="center-hub" 
+                />
+                
+                {/* Time travel spark effect */}
+                <g className="time-sparks">
+                  {[...Array(8)].map((_, i) => (
+                    <circle
+                      key={`spark-${i}`}
+                      cx="60"
+                      cy="60"
+                      r="1"
+                      fill="#D4AF37"
+                      className={`time-spark spark-${i}`}
+                      style={{
+                        transform: `translate(${Math.cos(i * Math.PI / 4) * 10}px, ${Math.sin(i * Math.PI / 4) * 10}px)`,
+                      }}
+                    />
+                  ))}
                 </g>
               </svg>
             </div>
