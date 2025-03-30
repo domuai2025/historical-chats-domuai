@@ -8,6 +8,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import PageDivider from "@/components/layout/PageDivider";
 import SubCard from "@/components/ui/sub-card";
+import FallbackVideo from "@/components/ui/fallback-video";
 import { fetchSubs, uploadVideo } from "@/lib/api";
 import { Link } from "wouter";
 import { BookOpenIcon, MusicIcon, UserIcon } from "lucide-react";
@@ -356,14 +357,49 @@ export default function Home() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {subs.map((sub: Sub) => (
-                <SubCard 
-                  key={sub.id} 
-                  sub={sub} 
-                  hasVideo={!!sub.videoUrl}
-                  videoSrc={sub.videoUrl || undefined}
-                />
-              ))}
+              {subs.map((sub: Sub) => {
+                // For problematic large videos use the simpler fallback component
+                const isProblematicVideo = [4, 14, 17].includes(sub.id);
+                
+                if (isProblematicVideo && sub.videoUrl) {
+                  return (
+                    <div 
+                      key={sub.id}
+                      className="relative overflow-hidden rounded-md border border-gold/30 bg-cream transition-all duration-300 hover:shadow-md steampunk-card"
+                    >
+                      <FallbackVideo 
+                        subId={sub.id} 
+                        name={sub.name} 
+                        videoPath={sub.videoUrl} 
+                      />
+                      <div className="p-4">
+                        <h3 className="font-serif text-xl font-medium gold-shimmer-text">{sub.name}</h3>
+                        <p className="text-sm text-darkbrown/80 italic">{sub.title}</p>
+                        
+                        <div className="mt-4 space-y-2">
+                          <Link href={`/chat/${sub.id}`}>
+                            <Button 
+                              className="w-full bg-burgundy text-cream hover:bg-burgundy/90 gold-shimmer relative"
+                            >
+                              Start Conversation
+                            </Button>
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+                
+                // Use normal SubCard for all other videos
+                return (
+                  <SubCard 
+                    key={sub.id} 
+                    sub={sub} 
+                    hasVideo={!!sub.videoUrl}
+                    videoSrc={sub.videoUrl || undefined}
+                  />
+                );
+              })}
             </div>
           )}
           
