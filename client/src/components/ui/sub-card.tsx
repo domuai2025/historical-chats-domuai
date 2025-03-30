@@ -38,67 +38,36 @@ export default function SubCard({ sub, hasVideo = false, videoSrc, onUploadClick
     };
   }, [sub.id, registerPlayer, unregisterPlayer, videoLoaded]);
 
-  // Simplified handling for mobile devices - go back to basics
-  useEffect(() => {
-    const isMobile = window.innerWidth < 768; 
-    
-    if (hasVideo && videoSrc && videoRef.current && !videoLoaded && !videoLoading && loadAttempts < 2) {
-      setVideoLoading(true);
+  // Don't load videos automatically at all - this is how it originally worked
+  useEffect(() => {    
+    if (hasVideo && videoSrc && videoRef.current && !videoLoaded) {
+      // The video will only load when the play button is clicked
+      // This is the "old way" that worked on mobile originally
       
-      // Set timeout to ensure the video is properly initialized
-      const timeoutId = setTimeout(() => {
+      // Always set poster image if available
+      if (sub.avatarUrl) {
+        videoRef.current.poster = sub.avatarUrl;
+      }
+      
+      // Set to loaded state so UI shows correctly
+      setVideoLoaded(true);
+      setVideoLoading(false);
+      
+      // Simple error handler
+      const errorHandler = () => {
+        console.warn(`Error with video for ${sub.name} (ID: ${sub.id})`);
+        setVideoError(true);
+      };
+      
+      videoRef.current.addEventListener('error', errorHandler, { once: true });
+      
+      return () => {
         if (videoRef.current) {
-          // Always set poster image if available
-          if (sub.avatarUrl) {
-            videoRef.current.poster = sub.avatarUrl;
-          }
-          
-          // Extra simple loading for mobile - just show the poster quickly
-          if (isMobile) {
-            // On mobile, don't even try to load the video, just show the poster
-            videoRef.current.preload = "none";
-            
-            // Mark as loaded right away on mobile
-            setTimeout(() => {
-              setVideoLoaded(true);
-              setVideoLoading(false);
-            }, 100);
-          } else {
-            // On desktop, actually try to load the video
-            videoRef.current.preload = "metadata";
-            videoRef.current.load();
-            
-            // Simple error handler
-            const errorHandler = () => {
-              console.warn(`Error loading video for ${sub.name} (ID: ${sub.id})`);
-              setVideoError(true);
-              setVideoLoading(false);
-            };
-            
-            videoRef.current.addEventListener('error', errorHandler, { once: true });
-            
-            // After 5 seconds, if still not loaded, show error state
-            const failsafeTimeout = setTimeout(() => {
-              if (!videoLoaded && videoRef.current) {
-                setVideoLoaded(true); // Set to true so we can show the fallback
-                setVideoError(true);
-                setVideoLoading(false);
-              }
-            }, 5000);
-            
-            return () => {
-              clearTimeout(failsafeTimeout);
-              if (videoRef.current) {
-                videoRef.current.removeEventListener('error', errorHandler);
-              }
-            };
-          }
+          videoRef.current.removeEventListener('error', errorHandler);
         }
-      }, 100);
-      
-      return () => clearTimeout(timeoutId);
+      };
     }
-  }, [sub.id, sub.name, sub.avatarUrl, hasVideo, videoSrc, videoLoaded, videoLoading, loadAttempts]);
+  }, [sub.id, sub.name, sub.avatarUrl, hasVideo, videoSrc, videoLoaded]);
   
   const handlePlayPause = () => {
     if (!videoLoaded && !videoError && hasVideo) {
@@ -204,13 +173,13 @@ export default function SubCard({ sub, hasVideo = false, videoSrc, onUploadClick
               </div>
             )}
             
+            {/* ALWAYS show the avatar or initials - this was in the working versions */}
             {!showAudioWave && (
               sub.avatarUrl ? (
                 <img 
                   src={sub.avatarUrl} 
                   alt={sub.name} 
                   className="h-full w-full object-cover"
-                  style={{ display: videoLoaded && !videoError ? 'none' : 'block' }}
                 />
               ) : (
                 <div 
@@ -218,7 +187,6 @@ export default function SubCard({ sub, hasVideo = false, videoSrc, onUploadClick
                   style={{ 
                     backgroundColor: sub.bgColor || '#7D2B35',
                     color: '#F5EDD7',
-                    display: videoLoaded && !videoError ? 'none' : 'flex'
                   }}
                 >
                   {sub.name.split(' ').map(n => n[0]).join('')}
