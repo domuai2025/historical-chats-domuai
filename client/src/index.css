@@ -56,4 +56,58 @@
   animation: fadeIn 0.3s ease-out forwards;
 }
 
+/* Logo animations */
+.logo-container {
+  position: relative;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.logo-svg {
+  transition: all 0.3s ease;
+}
+
+.logo-outer-circle {
+  animation: pulse 3s infinite alternate;
+}
+
+@keyframes pulse {
+  0% {
+    stroke-opacity: 0.6;
+    stroke-width: 4;
+  }
+  100% {
+    stroke-opacity: 1;
+    stroke-width: 5;
+  }
+}
+
+.logo-notes-animated .note-1 {
+  animation: bounce 0.6s ease-in-out infinite;
+  animation-delay: 0s;
+}
+
+.logo-notes-animated .note-2 {
+  animation: bounce 0.6s ease-in-out infinite;
+  animation-delay: 0.15s;
+}
+
+.logo-notes-animated .note-3 {
+  animation: bounce 0.6s ease-in-out infinite;
+  animation-delay: 0.3s;
+}
+
+.logo-notes-animated .note-4 {
+  animation: bounce 0.6s ease-in-out infinite;
+  animation-delay: 0.45s;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
 /* Card hover effect styles */
