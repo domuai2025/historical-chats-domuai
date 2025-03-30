@@ -91,17 +91,30 @@ export default function SubCard({ sub, hasVideo = false, videoSrc, onUploadClick
             )}
             
             {!showAudioWave && (
-              <img 
-                src={sub.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(sub.name)}&background=7D2B35&color=F5EDD7`} 
-                alt={sub.name} 
-                className="h-full w-full object-cover"
-                style={{ display: videoLoaded && !videoError ? 'none' : 'block' }}
-              />
+              sub.avatarUrl ? (
+                <img 
+                  src={sub.avatarUrl} 
+                  alt={sub.name} 
+                  className="h-full w-full object-cover"
+                  style={{ display: videoLoaded && !videoError ? 'none' : 'block' }}
+                />
+              ) : (
+                <div 
+                  className="h-full w-full flex items-center justify-center font-serif text-6xl"
+                  style={{ 
+                    backgroundColor: sub.bgColor || '#7D2B35',
+                    color: '#F5EDD7',
+                    display: videoLoaded && !videoError ? 'none' : 'flex'
+                  }}
+                >
+                  {sub.name.split(' ').map(n => n[0]).join('')}
+                </div>
+              )
             )}
             
             <video 
               className={`absolute inset-0 h-full w-full object-cover ${videoLoaded && !videoError ? '' : 'hidden'}`}
-              poster={sub.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(sub.name)}&background=7D2B35&color=F5EDD7`}
+              poster={sub.avatarUrl || ''}
               autoPlay={isPlaying}
               loop
               muted
@@ -115,11 +128,23 @@ export default function SubCard({ sub, hasVideo = false, videoSrc, onUploadClick
             </video>
           </>
         ) : (
-          <img 
-            src={sub.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(sub.name)}&background=7D2B35&color=F5EDD7`} 
-            alt={sub.name} 
-            className="h-full w-full object-cover"
-          />
+          sub.avatarUrl ? (
+            <img 
+              src={sub.avatarUrl} 
+              alt={sub.name} 
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div 
+              className="h-full w-full flex items-center justify-center font-serif text-6xl"
+              style={{ 
+                backgroundColor: sub.bgColor || '#7D2B35',
+                color: '#F5EDD7',
+              }}
+            >
+              {sub.name.split(' ').map(n => n[0]).join('')}
+            </div>
+          )
         )}
         
         {/* Share button in the top-right corner */}
