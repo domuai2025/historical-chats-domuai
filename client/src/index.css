@@ -10,6 +10,47 @@
   body {
     @apply font-sans antialiased bg-background text-foreground;
   }
+  
+  /* Accessibility Classes */
+  body.high-contrast {
+    --burgundy: #8B0000;
+    --cream: #FFFFF0;
+    --darkbrown: #3E2723;
+    --gold: #B8860B;
+    filter: contrast(1.4);
+  }
+  
+  body.large-text {
+    font-size: 118%;
+    line-height: 1.5;
+  }
+  
+  body.large-text h1 {
+    font-size: 2.5rem;
+  }
+  
+  body.large-text h2 {
+    font-size: 2rem;
+  }
+  
+  body.large-text h3 {
+    font-size: 1.75rem;
+  }
+  
+  body.large-text p, 
+  body.large-text li,
+  body.large-text label,
+  body.large-text input {
+    font-size: 1.2rem;
+  }
+  
+  body.reduced-motion *,
+  body.reduced-motion *::before,
+  body.reduced-motion *::after {
+    animation-duration: 0.001s !important;
+    transition-duration: 0.001s !important;
+    animation-iteration-count: 1 !important;
+  }
 }
 
 /* Audio wave animation for video placeholders */

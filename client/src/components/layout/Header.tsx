@@ -1,6 +1,7 @@
 import { Link } from "wouter";
 import { ClockIcon, BookIcon } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
+import { AccessibilityToggle } from "@/components/ui/accessibility-toggle";
 
 export default function Header() {
   const [isHovered, setIsHovered] = useState(false);
@@ -209,11 +210,12 @@ export default function Header() {
             </div>
           </div>
         </Link>
-        <div className="flex items-center">
+        <div className="flex items-center gap-3">
           <div className="text-sm text-burgundy flex items-center">
             <ClockIcon className="w-4 h-4 mr-1 animate-pulse" />
             <span className="hidden md:inline italic font-serif">Vintage Audio Experience</span>
           </div>
+          <AccessibilityToggle />
         </div>
       </div>
     </header>
