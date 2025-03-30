@@ -87,21 +87,93 @@ export default function Home() {
       <section className="bg-cream py-8 md:py-12">
         <div className="container mx-auto px-4 max-w-4xl">
           <div className="bg-beige border border-gold/20 rounded-lg p-6 md:p-10 text-center">
-            <div className="mx-auto w-24 h-24 mb-6">
-              <svg width="100%" height="100%" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="60" cy="60" r="58" fill="#F5F2E9" stroke="#D4AF37" strokeWidth="4" />
-                <circle cx="60" cy="60" r="50" fill="#F5F2E9" stroke="#7D2B35" strokeWidth="2" strokeDasharray="4 4" />
-                <g fill="#7D2B35">
-                  <path d="M60 50 Q64 40 68 50 V70 Q68 76 60 76 Q52 76 52 70 V50 Z" />
-                  <rect x="52" y="70" width="16" height="4" rx="2" />
-                  <path d="M35 30 Q38 25 41 30 V40 Q41 44 35 44 Q29 44 29 40 V30 Z" />
-                  <rect x="29" y="40" width="12" height="3" rx="1.5" />
-                  <path d="M85 30 Q88 25 91 30 V40 Q91 44 85 44 Q79 44 79 40 V30 Z" />
-                  <rect x="79" y="40" width="12" height="3" rx="1.5" />
-                  <path d="M35 75 Q38 70 41 75 V85 Q41 89 35 89 Q29 89 29 85 V75 Z" />
-                  <rect x="29" y="85" width="12" height="3" rx="1.5" />
-                  <path d="M85 75 Q88 70 91 75 V85 Q91 89 85 89 Q79 89 79 85 V75 Z" />
-                  <rect x="79" y="85" width="12" height="3" rx="1.5" />
+            <div className="mx-auto w-32 h-32 mb-6 main-logo-container">
+              <svg width="100%" height="100%" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="main-logo-svg">
+                {/* Outer circle with pulsing animation */}
+                <circle 
+                  cx="60" 
+                  cy="60" 
+                  r="58" 
+                  fill="#F5EDD7" 
+                  stroke="#D4AF37" 
+                  strokeWidth="4"
+                  className="logo-outer-circle" 
+                />
+                
+                {/* Middle circle with rotating dashed line */}
+                <circle 
+                  cx="60" 
+                  cy="60" 
+                  r="50" 
+                  fill="#F5EDD7" 
+                  stroke="#7D2B35" 
+                  strokeWidth="2" 
+                  strokeDasharray="2 3"
+                  className="logo-inner-circle rotating-circle" 
+                />
+                
+                {/* Inner solid circle with logo background */}
+                <circle 
+                  cx="60" 
+                  cy="60" 
+                  r="40" 
+                  fill="#F5EDD7" 
+                  stroke="#D4AF37" 
+                  strokeWidth="1.5"
+                  strokeDasharray="1 1"
+                  className="logo-center" 
+                />
+                
+                {/* Educational symbols around the circle */}
+                <g className="symbols-container rotating-symbols">
+                  {/* Book symbol at 45 degrees */}
+                  <g 
+                    fill="#7D2B35" 
+                    className="symbol-1" 
+                    transform="translate(76, 32.5) rotate(45)"
+                  >
+                    <path d="M-6 -8 h12 v16 h-12 z" />
+                    <path d="M-6 -8 v16 M0 -8 v16 M6 -8 v16" />
+                  </g>
+                  
+                  {/* Theater masks at 135 degrees */}
+                  <g 
+                    fill="#7D2B35" 
+                    className="symbol-2" 
+                    transform="translate(32.5, 32.5) rotate(135)"
+                  >
+                    <path d="M-4 -6 a6 6 0 1 1 0 12 a6 6 0 1 1 0 -12 z" />
+                    <path d="M4 -6 a6 6 0 1 0 0 12 a6 6 0 1 0 0 -12 z" />
+                    <path d="M-6 -2 l12 0 M-5 2 l10 0" stroke="#7D2B35" strokeWidth="1.5" />
+                  </g>
+                  
+                  {/* Ancient Greek column at 225 degrees */}
+                  <g 
+                    fill="#7D2B35" 
+                    className="symbol-3" 
+                    transform="translate(32.5, 76) rotate(225)"
+                  >
+                    <rect x="-5" y="-8" width="10" height="2" rx="1" />
+                    <rect x="-4" y="-6" width="8" height="12" rx="0" />
+                    <rect x="-5" y="6" width="10" height="2" rx="1" />
+                    <path d="M-4 -6 v12 M0 -6 v12 M4 -6 v12" stroke="#7D2B35" strokeWidth="0.75" />
+                  </g>
+                  
+                  {/* Musical note at 315 degrees */}
+                  <g 
+                    fill="#7D2B35" 
+                    className="symbol-4" 
+                    transform="translate(76, 76) rotate(315)"
+                  >
+                    <path d="M-2 -8 h4 v8 a4 4 0 1 1 -4 0 z" />
+                  </g>
+                </g>
+                
+                {/* Central quill pen */}
+                <g fill="#7D2B35" className="center-symbol">
+                  <path d="M60 50 Q63 40 66 44 L63 70 Q62 75 60 75 Q58 75 57 70 L54 44 Q57 40 60 50 z" />
+                  <path d="M55 70 L65 70" stroke="#7D2B35" strokeWidth="1.5" />
+                  <path d="M60 45 L60 55" stroke="#7D2B35" strokeWidth="0.75" strokeDasharray="1 1" />
                 </g>
               </svg>
             </div>

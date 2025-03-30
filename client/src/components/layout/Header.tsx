@@ -1,18 +1,28 @@
 import { Link } from "wouter";
-import { MusicIcon } from "lucide-react";
+import { MusicIcon, BookIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function Header() {
   const [isHovered, setIsHovered] = useState(false);
-  const [pulseAngle, setPulseAngle] = useState(0);
+  const [rotationAngle, setRotationAngle] = useState(0);
+  const [symbolsAngle, setSymbolsAngle] = useState(0);
   
-  // Subtle continuous animation for the logo
+  // Subtle continuous animations for the logo
   useEffect(() => {
-    const interval = setInterval(() => {
-      setPulseAngle(prev => (prev + 1) % 360);
+    // For the inner dashed ring - slower rotation
+    const ringInterval = setInterval(() => {
+      setRotationAngle(prev => (prev + 0.5) % 360);
     }, 50);
     
-    return () => clearInterval(interval);
+    // For the symbols orbit - very slow rotation
+    const symbolsInterval = setInterval(() => {
+      setSymbolsAngle(prev => (prev + 0.1) % 360);
+    }, 50);
+    
+    return () => {
+      clearInterval(ringInterval);
+      clearInterval(symbolsInterval);
+    };
   }, []);
   
   return (
@@ -21,21 +31,21 @@ export default function Header() {
         <Link href="/">
           <div className="flex items-center cursor-pointer">
             <div 
-              className="logo-container w-12 h-12 rounded-full bg-burgundy/10 border-2 border-gold flex items-center justify-center mr-3 overflow-hidden transform transition-all duration-500 ease-in-out hover:scale-110"
+              className="logo-container w-14 h-14 rounded-full bg-cream border-2 border-gold flex items-center justify-center mr-3 overflow-hidden transition-all duration-500 ease-in-out"
               style={{ 
-                boxShadow: isHovered ? '0 0 12px rgba(212, 175, 55, 0.6)' : '0 0 6px rgba(212, 175, 55, 0.3)',
-                transform: `rotate(${isHovered ? 5 : 0}deg) scale(${isHovered ? 1.1 : 1})`,
+                boxShadow: isHovered ? '0 0 12px rgba(212, 175, 55, 0.7)' : '0 0 8px rgba(212, 175, 55, 0.4)',
+                transform: `rotate(${isHovered ? 8 : 0}deg) scale(${isHovered ? 1.08 : 1})`,
               }}
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
             >
-              <svg width="38" height="38" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="logo-svg">
+              <svg width="54" height="54" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="logo-svg">
                 {/* Outer circle with pulsing animation */}
                 <circle 
                   cx="60" 
                   cy="60" 
                   r="58" 
-                  fill="#F5F2E9" 
+                  fill="#F5EDD7" 
                   stroke="#D4AF37" 
                   strokeWidth="4"
                   className="logo-outer-circle" 
@@ -46,34 +56,85 @@ export default function Header() {
                   cx="60" 
                   cy="60" 
                   r="50" 
-                  fill="#F5F2E9" 
+                  fill="#F5EDD7" 
                   stroke="#7D2B35" 
                   strokeWidth="2" 
-                  strokeDasharray="4 4"
+                  strokeDasharray="2 3"
                   style={{
                     transformOrigin: 'center',
-                    transform: `rotate(${pulseAngle}deg)`,
+                    transform: `rotate(${rotationAngle}deg)`,
                   }}
                   className="logo-inner-circle" 
                 />
                 
-                {/* Main music note in center */}
-                <g fill="#7D2B35" className={isHovered ? "logo-notes-animated" : ""}>
-                  <path d="M60 50 Q64 40 68 50 V70 Q68 76 60 76 Q52 76 52 70 V50 Z" />
-                  <rect x="52" y="70" width="16" height="4" rx="2" />
+                {/* Inner solid circle with logo background */}
+                <circle 
+                  cx="60" 
+                  cy="60" 
+                  r="40" 
+                  fill="#F5EDD7" 
+                  stroke="#D4AF37" 
+                  strokeWidth="1.5"
+                  strokeDasharray="1 1"
+                  className="logo-center" 
+                />
+                
+                {/* Educational symbols rotating around the circle */}
+                <g 
+                  style={{
+                    transformOrigin: 'center',
+                    transform: `rotate(${symbolsAngle}deg)`,
+                  }}
+                  className="symbols-container"
+                >
+                  {/* Book symbol at 45 degrees */}
+                  <g 
+                    fill="#7D2B35" 
+                    className={isHovered ? "symbol-animated" : ""} 
+                    transform="translate(76, 32.5) rotate(45)"
+                  >
+                    <path d="M-6 -8 h12 v16 h-12 z" className="symbol-1" />
+                    <path d="M-6 -8 v16 M0 -8 v16 M6 -8 v16" className="symbol-1" />
+                  </g>
                   
-                  {/* Four outer music notes */}
-                  <path d="M35 30 Q38 25 41 30 V40 Q41 44 35 44 Q29 44 29 40 V30 Z" className="note-1" />
-                  <rect x="29" y="40" width="12" height="3" rx="1.5" className="note-1" />
+                  {/* Theater masks at 135 degrees */}
+                  <g 
+                    fill="#7D2B35" 
+                    className={isHovered ? "symbol-animated" : ""} 
+                    transform="translate(32.5, 32.5) rotate(135)"
+                  >
+                    <path d="M-4 -6 a6 6 0 1 1 0 12 a6 6 0 1 1 0 -12 z" className="symbol-2" />
+                    <path d="M4 -6 a6 6 0 1 0 0 12 a6 6 0 1 0 0 -12 z" className="symbol-2" />
+                    <path d="M-6 -2 l12 0 M-5 2 l10 0" stroke="#7D2B35" strokeWidth="1.5" className="symbol-2" />
+                  </g>
                   
-                  <path d="M85 30 Q88 25 91 30 V40 Q91 44 85 44 Q79 44 79 40 V30 Z" className="note-2" />
-                  <rect x="79" y="40" width="12" height="3" rx="1.5" className="note-2" />
+                  {/* Ancient Greek column at 225 degrees */}
+                  <g 
+                    fill="#7D2B35" 
+                    className={isHovered ? "symbol-animated" : ""} 
+                    transform="translate(32.5, 76) rotate(225)"
+                  >
+                    <rect x="-5" y="-8" width="10" height="2" rx="1" className="symbol-3" />
+                    <rect x="-4" y="-6" width="8" height="12" rx="0" className="symbol-3" />
+                    <rect x="-5" y="6" width="10" height="2" rx="1" className="symbol-3" />
+                    <path d="M-4 -6 v12 M0 -6 v12 M4 -6 v12" stroke="#7D2B35" strokeWidth="0.75" className="symbol-3" />
+                  </g>
                   
-                  <path d="M35 75 Q38 70 41 75 V85 Q41 89 35 89 Q29 89 29 85 V75 Z" className="note-3" />
-                  <rect x="29" y="85" width="12" height="3" rx="1.5" className="note-3" />
-                  
-                  <path d="M85 75 Q88 70 91 75 V85 Q91 89 85 89 Q79 89 79 85 V75 Z" className="note-4" />
-                  <rect x="79" y="85" width="12" height="3" rx="1.5" className="note-4" />
+                  {/* Musical note at 315 degrees */}
+                  <g 
+                    fill="#7D2B35" 
+                    className={isHovered ? "symbol-animated" : ""} 
+                    transform="translate(76, 76) rotate(315)"
+                  >
+                    <path d="M-2 -8 h4 v8 a4 4 0 1 1 -4 0 z" className="symbol-4" />
+                  </g>
+                </g>
+                
+                {/* Central quill pen */}
+                <g fill="#7D2B35" className={isHovered ? "center-symbol-animated" : ""}>
+                  <path d="M60 50 Q63 40 66 44 L63 70 Q62 75 60 75 Q58 75 57 70 L54 44 Q57 40 60 50 z" className="center-symbol" />
+                  <path d="M55 70 L65 70" stroke="#7D2B35" strokeWidth="1.5" className="center-symbol" />
+                  <path d="M60 45 L60 55" stroke="#7D2B35" strokeWidth="0.75" strokeDasharray="1 1" className="center-symbol" />
                 </g>
               </svg>
             </div>
@@ -86,7 +147,7 @@ export default function Header() {
         </Link>
         <div className="flex items-center">
           <div className="text-sm text-burgundy flex items-center">
-            <MusicIcon className="w-4 h-4 mr-1 animate-pulse" />
+            <BookIcon className="w-4 h-4 mr-1 animate-pulse" />
             <span className="hidden md:inline italic font-serif">Vintage Audio Experience</span>
           </div>
         </div>

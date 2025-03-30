@@ -56,23 +56,64 @@
   animation: fadeIn 0.3s ease-out forwards;
 }
 
-/* Logo animations */
-.logo-container {
+/* Logo animations - Header and Main Page */
+.logo-container, .main-logo-container {
   position: relative;
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.logo-svg {
+.logo-svg, .main-logo-svg {
   transition: all 0.3s ease;
 }
 
 .logo-outer-circle {
-  animation: pulse 3s infinite alternate;
+  animation: pulse 4s infinite alternate;
+}
+
+.logo-center {
+  animation: inner-pulse 5s infinite alternate;
+}
+
+/* Main page logo animations */
+.main-logo-container {
+  animation: float-logo 6s ease-in-out infinite;
+}
+
+.main-logo-svg {
+  filter: drop-shadow(0 0 8px rgba(125, 43, 53, 0.1));
+}
+
+.rotating-circle {
+  animation: rotate-circle 30s linear infinite;
+  transform-origin: center;
+}
+
+.rotating-symbols {
+  animation: rotate-symbols 80s linear infinite reverse;
+  transform-origin: center;
+}
+
+@keyframes float-logo {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes rotate-circle {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes pulse {
   0% {
-    stroke-opacity: 0.6;
+    stroke-opacity: 0.7;
     stroke-width: 4;
   }
   100% {
@@ -81,33 +122,117 @@
   }
 }
 
-.logo-notes-animated .note-1 {
-  animation: bounce 0.6s ease-in-out infinite;
+@keyframes inner-pulse {
+  0% {
+    stroke-opacity: 0.5;
+    stroke-dasharray: 1 1;
+  }
+  100% {
+    stroke-opacity: 0.8;
+    stroke-dasharray: 0.5 2;
+  }
+}
+
+/* Educational symbols animations */
+.symbol-animated {
+  animation: float 1.5s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.symbol-animated.symbol-1 {
   animation-delay: 0s;
 }
 
-.logo-notes-animated .note-2 {
-  animation: bounce 0.6s ease-in-out infinite;
-  animation-delay: 0.15s;
+.symbol-animated.symbol-2 {
+  animation-delay: 0.2s;
 }
 
-.logo-notes-animated .note-3 {
-  animation: bounce 0.6s ease-in-out infinite;
-  animation-delay: 0.3s;
+.symbol-animated.symbol-3 {
+  animation-delay: 0.4s;
 }
 
-.logo-notes-animated .note-4 {
-  animation: bounce 0.6s ease-in-out infinite;
-  animation-delay: 0.45s;
+.symbol-animated.symbol-4 {
+  animation-delay: 0.6s;
 }
 
-@keyframes bounce {
+/* Main logo symbol animations */
+.symbol-1 {
+  animation: pulse-symbol 3s infinite alternate;
+  animation-delay: 0s;
+  transform-origin: center;
+}
+
+.symbol-2 {
+  animation: pulse-symbol 3s infinite alternate;
+  animation-delay: 0.75s;
+  transform-origin: center;
+}
+
+.symbol-3 {
+  animation: pulse-symbol 3s infinite alternate;
+  animation-delay: 1.5s;
+  transform-origin: center;
+}
+
+.symbol-4 {
+  animation: pulse-symbol 3s infinite alternate;
+  animation-delay: 2.25s;
+  transform-origin: center;
+}
+
+@keyframes float {
   0%, 100% {
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
+    opacity: 1;
   }
   50% {
-    transform: translateY(-3px);
+    transform: translateY(-2px) scale(1.05);
+    opacity: 0.9;
   }
+}
+
+@keyframes pulse-symbol {
+  0% {
+    opacity: 0.7;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+/* Center symbol animation */
+.center-symbol-animated {
+  animation: glow 2s infinite alternate;
+}
+
+.center-symbol {
+  animation: float-center 4s ease-in-out infinite;
+  transform-origin: center;
+}
+
+@keyframes float-center {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-1px) scale(1.03);
+  }
+}
+
+@keyframes glow {
+  0% {
+    filter: drop-shadow(0 0 1px rgba(125, 43, 53, 0.1));
+  }
+  100% {
+    filter: drop-shadow(0 0 3px rgba(125, 43, 53, 0.5));
+  }
+}
+
+/* Symbols container animation */
+.symbols-container {
+  transition: transform 1s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
 /* Card hover effect styles */
