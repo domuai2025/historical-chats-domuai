@@ -2,17 +2,8 @@ import { Sub } from "@shared/schema";
 
 // Helper function to generate avatar URLs from names
 const generateAvatarUrl = (name: string) => {
-  // Map of historical figures to their avatar URLs
-  const avatarMap: Record<string, string> = {
-    "Albert Einstein": "/assets/avatars/einstein.jpg",
-    "Marie Curie": "/assets/avatars/curie.jpg",
-    "Socrates": "/assets/avatars/socrates.jpg",
-    // For the rest of the figures, we'll use initials for now
-    // These entries would be populated with actual avatar URLs as they become available
-  };
-  
-  // Return the avatar URL for the historical figure, or null as fallback
-  return avatarMap[name] || null;
+  // This will use initials as a fallback avatar
+  return null; // Currently null as we'll use initials in the UI
 };
 
 // Helper function to get vibrant background colors for avatars
