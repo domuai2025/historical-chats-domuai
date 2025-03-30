@@ -175,8 +175,8 @@ export default function SubCard({ sub, hasVideo = false, videoSrc, onUploadClick
               style={{ display: videoLoaded && !videoError ? 'block' : 'none' }}
               onPlay={() => setIsPlaying(true)}
               onPause={() => setIsPlaying(false)}
-              src={videoSrc}
             >
+              {videoSrc && <source src={videoSrc} type="video/mp4" />}
               Your browser does not support the video tag.
             </video>
           </>
