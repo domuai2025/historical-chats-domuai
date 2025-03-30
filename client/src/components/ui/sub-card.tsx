@@ -43,19 +43,31 @@ export default function SubCard({ sub, hasVideo = false, videoSrc, onUploadClick
     // Check if this is a large video using the context function
     const hasLargeVideo = isLargeVideo(sub.id);
     
-    if (hasVideo && videoSrc && hasLargeVideo && videoRef.current && !videoLoaded && !videoLoading && loadAttempts < 2) {
-      // For large videos, we'll manually manage the loading
+    if (hasVideo && videoSrc && videoRef.current && !videoLoaded && !videoLoading && loadAttempts < 2) {
+      // For all videos, we'll do some basic loading management
       setVideoLoading(true);
       
       // Set timeout to ensure the video is properly initialized
       const timeoutId = setTimeout(() => {
         if (videoRef.current) {
-          // Force metadata loading
+          // Load poster image first if we have one
+          if (sub.avatarUrl) {
+            videoRef.current.poster = sub.avatarUrl;
+          }
+          
+          // Force metadata loading with low priority for large videos
+          if (hasLargeVideo) {
+            videoRef.current.preload = "none";
+          } else {
+            videoRef.current.preload = "metadata";
+          }
+          
+          // Always force loading to try to get at least metadata
           videoRef.current.load();
           
           // Add more specific error handling
           const errorHandler = () => {
-            console.warn(`Error loading large video for ${sub.name} (ID: ${sub.id})`);
+            console.warn(`Error loading video for ${sub.name} (ID: ${sub.id})`);
             setVideoError(true);
             setVideoLoading(false);
             setLoadAttempts(prev => prev + 1);
@@ -63,15 +75,30 @@ export default function SubCard({ sub, hasVideo = false, videoSrc, onUploadClick
           
           videoRef.current.addEventListener('error', errorHandler, { once: true });
           
-          // After 8 seconds, if the video hasn't loaded, consider it failed
-          const failsafeTimeout = setTimeout(() => {
-            if (!videoLoaded && videoRef.current) {
-              errorHandler();
-            }
-          }, 8000);
+          // On mobile, we'll show the video element anyway after a short delay
+          // This helps with some mobile browsers that don't trigger onLoad events properly
+          if (window.innerWidth < 768) {
+            setTimeout(() => {
+              if (!videoLoaded && videoRef.current) {
+                // Just mark as loaded on mobile even if we just see the poster
+                setVideoLoaded(true);
+                setVideoLoading(false);
+              }
+            }, 1000);
+          } else {
+            // For desktop, we'll wait longer before giving up
+            const failsafeTimeout = setTimeout(() => {
+              if (!videoLoaded && videoRef.current) {
+                errorHandler();
+              }
+            }, 8000);
+            
+            return () => {
+              clearTimeout(failsafeTimeout);
+            };
+          }
           
           return () => {
-            clearTimeout(failsafeTimeout);
             if (videoRef.current) {
               videoRef.current.removeEventListener('error', errorHandler);
             }
@@ -81,7 +108,7 @@ export default function SubCard({ sub, hasVideo = false, videoSrc, onUploadClick
       
       return () => clearTimeout(timeoutId);
     }
-  }, [sub.id, sub.name, hasVideo, videoSrc, videoLoaded, videoLoading, loadAttempts, isLargeVideo]);
+  }, [sub.id, sub.name, sub.avatarUrl, hasVideo, videoSrc, videoLoaded, videoLoading, loadAttempts, isLargeVideo]);
   
   const handlePlayPause = () => {
     if (!videoLoaded && !videoError && hasVideo) {
