@@ -26,8 +26,7 @@ export const VideoPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
   // ID 4=Socrates(Socrets), 14=John Lennon, 17=Janis Joplin
   const [largeVideoIds] = useState<number[]>([4, 14, 17]); 
   
-  // For now, we're treating all videos equally 
-  // This restores the original behavior that worked on mobile
+  // Simple video handling - no special cases
   const problematicVideoIds: number[] = [];
 
   // Memory management - clean up unused players
