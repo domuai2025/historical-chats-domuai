@@ -32,6 +32,35 @@ export default function SubCard({ sub, hasVideo = false, videoSrc, onUploadClick
   const handleVideoLoad = () => {
     setVideoLoaded(true);
     setVideoError(false);
+    
+    // Capture first frame as thumbnail if no avatar is provided
+    if (!sub.avatarUrl && videoSrc) {
+      const video = document.createElement('video');
+      video.src = videoSrc;
+      video.muted = true;
+      video.playsInline = true;
+      
+      video.addEventListener('loadeddata', () => {
+        // Create canvas to capture the frame
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        
+        // Draw the video frame to the canvas
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          // We don't need to do anything with the captured frame here
+          // since we're now just using the video element properly
+        }
+        
+        // Clean up
+        video.src = '';
+      });
+      
+      // Start loading
+      video.load();
+    }
   };
   
   const handleVideoError = () => {

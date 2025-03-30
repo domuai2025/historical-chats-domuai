@@ -358,7 +358,8 @@ export default function Home() {
                 <SubCard 
                   key={sub.id} 
                   sub={sub} 
-                  onUploadClick={handleUploadClick} 
+                  hasVideo={!!sub.videoUrl}
+                  videoSrc={sub.videoUrl || undefined}
                 />
               ))}
             </div>
