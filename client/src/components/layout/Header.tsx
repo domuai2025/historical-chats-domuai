@@ -204,7 +204,7 @@ export default function Header() {
             </div>
             <div>
               <h1 className="font-serif text-burgundy font-semibold text-xl md:text-2xl">
-                The Subs <span className="text-gold font-normal">AI</span>
+                The Subs <span className="text-gold font-normal">AI</span><sup className="text-xs relative -top-1">™</sup>
               </h1>
             </div>
           </div>

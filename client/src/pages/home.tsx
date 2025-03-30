@@ -306,7 +306,7 @@ export default function Home() {
               </svg>
             </div>
             
-            <h1 className="font-serif text-burgundy text-4xl md:text-5xl mb-4">The Subs <span className="text-gold font-normal">AI</span></h1>
+            <h1 className="font-serif text-burgundy text-4xl md:text-5xl mb-4">The Subs <span className="text-gold font-normal">AI</span><sup className="text-xs relative -top-3">™</sup></h1>
             
             <div className="w-6 h-6 relative mx-auto mb-4">
               <div className="absolute inset-0 rounded-full border border-burgundy opacity-30"></div>

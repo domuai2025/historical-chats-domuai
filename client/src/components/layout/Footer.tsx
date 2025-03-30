@@ -24,7 +24,7 @@ export default function Footer() {
           For educational purposes only. Free to all, provided by The Magdalena Foundation.
         </p>
         <p className="text-darkbrown/60 text-xs mt-4 font-serif">
-          Powered by DOMU AI
+          Powered by <a href="https://domuai.com" target="_blank" rel="noopener noreferrer" className="hover:text-burgundy transition-colors">DOMU AI<sup className="text-[0.7em] relative -top-0.5">™</sup></a>
         </p>
         <div className="mt-4 flex justify-center items-center text-xs text-gold">
           <span className="font-serif italic border-b border-burgundy/20 pb-0.5 px-2">Vintage Audio Experience</span>
