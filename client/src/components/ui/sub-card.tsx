@@ -12,16 +12,6 @@ interface SubCardProps {
 export default function SubCard({ sub, onUploadClick }: SubCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(n => n[0])
-      .join('')
-      .toUpperCase();
-  };
-  
-  const subInitials = getInitials(sub.name);
-
   return (
     <div 
       className="figure-card bg-cream rounded-lg overflow-hidden transition-all duration-300 border border-gold/30 hover:border-gold/50"
@@ -33,24 +23,9 @@ export default function SubCard({ sub, onUploadClick }: SubCardProps) {
     >
       <div className="relative h-48 bg-beige">
         <VideoPlaceholder videoUrl={sub.videoUrl} bgColor={sub.bgColor} />
-        
-        {/* Avatar circle */}
-        <div className={`absolute z-30 bottom-0 right-0 transform translate-y-1/3 translate-x-1/3 mr-4 
-                       ${isHovered ? 'avatar-glow' : ''}`}>
-          <div 
-            className="avatar-circle w-14 h-14 rounded-full border-2 border-cream flex items-center justify-center overflow-hidden"
-            style={{ backgroundColor: sub.bgColor || '#7D2B35' }}
-          >
-            {sub.avatarUrl ? (
-              <img src={sub.avatarUrl} alt={sub.name} className="w-full h-full object-cover" />
-            ) : (
-              <span className="text-cream font-serif text-lg">{subInitials}</span>
-            )}
-          </div>
-        </div>
       </div>
       
-      <div className="p-4 pt-10">
+      <div className="p-4">
         <h3 className="font-serif text-lg font-medium text-burgundy">{sub.name}</h3>
         <p className="text-sm text-darkbrown/80 italic mb-4 font-serif">{sub.title}</p>
         <div className="flex items-center justify-between">
