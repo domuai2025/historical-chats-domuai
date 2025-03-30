@@ -376,7 +376,7 @@ export default function Home() {
                         <h3 className="font-serif text-xl font-medium gold-shimmer-text">{sub.name}</h3>
                         <p className="text-sm text-darkbrown/80 italic">{sub.title}</p>
                         
-                        <div className="mt-4 space-y-2">
+                        <div className="mt-4">
                           <Link href={`/chat/${sub.id}`}>
                             <Button 
                               className="w-full bg-burgundy text-cream hover:bg-burgundy/90 gold-shimmer relative"

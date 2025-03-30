@@ -23,7 +23,11 @@ export const useVideoPlayer = () => useContext(VideoPlayerContext);
 export const VideoPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [players, setPlayers] = useState<Map<number, VideoPlayer>>(new Map());
   // Track large videos specifically for special handling
-  const [largeVideoIds] = useState<number[]>([4, 14, 17]); // ID 4=Socrates(Socrets), 14=John Lennon, 17=Janis Joplin
+  // ID 4=Socrates(Socrets), 14=John Lennon, 17=Janis Joplin
+  const [largeVideoIds] = useState<number[]>([4, 14, 17]); 
+  
+  // These IDs need extra care for playback
+  const problematicVideoIds = [4, 14, 17];
 
   // Memory management - clean up unused players
   useEffect(() => {
@@ -75,12 +79,48 @@ export const VideoPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const playVideo = useCallback((id: number) => {
     const player = players.get(id);
     if (player) {
+      // Special pre-loading for problematic video IDs - on the chat page we handle them differently
+      if (problematicVideoIds.includes(id)) {
+        // For problematic videos, we need to force a complete refresh of the video element
+        try {
+          // Try to reload the video first
+          player.load();
+          
+          // Use a short timeout to ensure the browser has time to start loading the video
+          setTimeout(() => {
+            // Set low volume to reduce initial audio pop
+            const originalVolume = player.volume;
+            player.volume = 0.1;
+            
+            // Attempt to play
+            player.play()
+              .then(() => {
+                setTimeout(() => {
+                  player.volume = originalVolume;
+                }, 300);
+              })
+              .catch(err => {
+                console.warn(`Initial play error for large video ${id}, trying fallback:`, err);
+                
+                // Fallback - try muting and playing
+                player.muted = true;
+                player.play().catch(innerErr => {
+                  console.error(`Still can't play problematic video ${id}:`, innerErr);
+                });
+              });
+          }, 300);
+        } catch (err) {
+          console.error(`Error with problematic video ${id}:`, err);
+        }
+        return;
+      }
+      
       // Set low volume to reduce initial audio pop if there is any
       const originalVolume = player.volume;
       player.volume = 0.1;
       
-      // Special handling for large videos
-      if (largeVideoIds.includes(id)) {
+      // Special handling for other large videos
+      if (largeVideoIds.includes(id) && !problematicVideoIds.includes(id)) {
         // For large videos, ensure metadata is loaded first
         if (player.readyState < 1) { // HAVE_METADATA = 1
           player.load(); // Force metadata loading
@@ -132,7 +172,7 @@ export const VideoPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
           });
       }
     }
-  }, [players, largeVideoIds]);
+  }, [players, largeVideoIds, problematicVideoIds]);
 
   const stopAllExcept = useCallback((id: number) => {
     players.forEach((player, playerId) => {
@@ -141,20 +181,26 @@ export const VideoPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
           // Ensure video is fully stopped and unloaded from memory when not in use
           player.pause();
           
+          // For problematic videos, we need to be even more aggressive to release memory
+          if (problematicVideoIds.includes(playerId)) {
+            player.currentTime = 0;
+            
+            // Completely unload the problematic video
+            if (player.src) {
+              player.removeAttribute('src');
+              player.load();
+            }
+          }
           // For large videos, we want to unload them from memory more aggressively
-          if (largeVideoIds.includes(playerId)) {
+          else if (largeVideoIds.includes(playerId)) {
             // Setting currentTime to 0 helps browsers garbage collect video data
             player.currentTime = 0;
             
-            // For very large videos, temporarily disable the source to free memory
-            // We create a cleanup function to restore the src later if needed
+            // For large videos, temporarily disable the source to free memory
             const originalSrc = player.src;
             if (originalSrc && player.readyState > 0) {
-              // Store the current position to restore later if needed
               player.removeAttribute('src');
               player.load(); // Force browser to release resources
-              
-              // We don't store the original source here since the component will handle that
             }
           } else {
             // For normal-sized videos just reset the time
@@ -165,7 +211,7 @@ export const VideoPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
         }
       }
     });
-  }, [players, largeVideoIds]);
+  }, [players, largeVideoIds, problematicVideoIds]);
 
   return (
     <VideoPlayerContext.Provider 
