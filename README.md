@@ -58,4 +58,4 @@ npm run dev
 - React frontend with advanced animated interfaces
 - Node.js backend with AI conversational engine
 - OpenAI GPT integration for natural conversations
-- Voice synthesis for authentic character voices
+- Voice synthesis for authentic character voices# historical-chats-domuai
