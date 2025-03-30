@@ -120,6 +120,7 @@ export class MemStorage implements IStorage {
       createdAt,
       videoUrl: insertSub.videoUrl ?? null,
       avatarUrl: insertSub.avatarUrl ?? null,
+      voiceFile: insertSub.voiceFile ?? null,
       bgColor: insertSub.bgColor ?? "#7D4F50"
     };
     this.subs.set(id, sub);

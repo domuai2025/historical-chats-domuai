@@ -7,7 +7,7 @@ interface VoiceSettings {
   style: number;
   use_speaker_boost: boolean;
 }
-import fs from 'fs';
+import * as fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 
@@ -67,22 +67,26 @@ const defaultVoiceSettings: VoiceSettings = {
   use_speaker_boost: true,
 };
 
+// Function to check if a sub has a custom voice file
+async function getSubVoiceFile(subId: number): Promise<string | null> {
+  try {
+    // Import the storage module dynamically to avoid circular dependencies
+    const { storage } = await import('../storage');
+    const sub = await storage.getSub(subId);
+    return sub?.voiceFile || null;
+  } catch (error) {
+    console.error('Error getting sub voice file:', error);
+    return null;
+  }
+}
+
 // Function to generate voice for a historical figure
 export async function generateVoiceResponse(
   text: string,
-  figureName: string
+  figureName: string,
+  subId?: number
 ): Promise<string> {
   try {
-    // Get the voice ID for this figure, or use default voice
-    let voiceId = figureToVoiceMap[figureName];
-    if (!voiceId) {
-      // Simple gender detection based on common female names ending with 'a'
-      // This is just a fallback and not completely accurate
-      voiceId = figureName.endsWith('a') 
-        ? figureToVoiceMap.default_female 
-        : figureToVoiceMap.default_male;
-    }
-
     // Generate a unique filename based on text content and figure name
     const hash = crypto.createHash('md5').update(`${figureName}-${text}`).digest('hex');
     const fileName = `${hash}.mp3`;
@@ -92,6 +96,28 @@ export async function generateVoiceResponse(
     if (fs.existsSync(filePath)) {
       console.log(`Using cached audio file: ${fileName}`);
       return `/uploads/audio/${fileName}`;
+    }
+    
+    // Check if this sub has a custom voice file
+    let customVoiceFile = null;
+    if (subId) {
+      customVoiceFile = await getSubVoiceFile(subId);
+    }
+    
+    if (customVoiceFile) {
+      // Use the custom voice file instead of generating a new one
+      console.log(`Using custom voice file for ${figureName}: ${customVoiceFile}`);
+      return customVoiceFile;
+    }
+    
+    // Get the voice ID for this figure, or use default voice
+    let voiceId = figureToVoiceMap[figureName];
+    if (!voiceId) {
+      // Simple gender detection based on common female names ending with 'a'
+      // This is just a fallback and not completely accurate
+      voiceId = figureName.endsWith('a') 
+        ? figureToVoiceMap.default_female 
+        : figureToVoiceMap.default_male;
     }
     
     // Generate audio with ElevenLabs

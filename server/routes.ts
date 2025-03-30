@@ -5,6 +5,7 @@ import { z } from "zod";
 import OpenAI from "openai";
 import path from "path";
 import fs from "fs/promises";
+import * as fsSync from "fs";
 import multer from "multer";
 import { fileURLToPath } from "url";
 import { insertSubSchema, insertMessageSchema } from "@shared/schema";
@@ -42,6 +43,24 @@ const storage_multer = multer.diskStorage({
   }
 });
 
+// Configure multer for voice uploads
+const voice_storage_multer = multer.diskStorage({
+  destination: (_req, _file, cb) => {
+    // Use the voices subdirectory
+    const voicesDir = path.join(uploadDir, 'voices');
+    // Ensure the voices directory exists
+    fs.mkdir(voicesDir, { recursive: true }).then(() => {
+      cb(null, voicesDir);
+    }).catch(err => {
+      cb(err, '');
+    });
+  },
+  filename: (_req, file, cb) => {
+    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
+    cb(null, `${uniqueSuffix}-${file.originalname}`);
+  }
+});
+
 const upload = multer({
   storage: storage_multer,
   // No file size limit - allow files of any size
@@ -51,6 +70,19 @@ const upload = multer({
       cb(null, true);
     } else {
       cb(new Error('Only video files are allowed'));
+    }
+  }
+});
+
+const uploadVoice = multer({
+  storage: voice_storage_multer,
+  // No file size limit - allow files of any size
+  fileFilter: (_req, file, cb) => {
+    // Check for MP3 or audio types
+    if (file.mimetype === 'audio/mpeg' || file.mimetype.startsWith('audio/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only audio files are allowed'));
     }
   }
 });
@@ -194,10 +226,10 @@ Remember: This is a casual chat, not a lecture. Be brief, warm, and engaging.`;
       // Extract the AI response from OpenAI
       const aiResponse = response.choices[0].message.content || "I'm sorry, I couldn't generate a response.";
       
-      // Generate audio version of the response using ElevenLabs
+      // Generate audio version of the response using ElevenLabs or custom voice file
       let audioUrl = '';
       try {
-        audioUrl = await generateVoiceResponse(aiResponse, sub.name);
+        audioUrl = await generateVoiceResponse(aiResponse, sub.name, messageData.subId);
         console.log(`Generated audio response for ${sub.name}: ${audioUrl}`);
       } catch (audioError) {
         console.error('Error generating audio response:', audioError);
@@ -234,12 +266,13 @@ Remember: This is a casual chat, not a lecture. Be brief, warm, and engaging.`;
     try {
       const text = req.query.text as string;
       const figureName = req.query.figure as string;
+      const subId = req.query.subId ? parseInt(req.query.subId as string) : undefined;
       
       if (!text || !figureName) {
         return res.status(400).json({ message: "Missing required parameters: text and figure" });
       }
       
-      const audioUrl = await generateVoiceResponse(text, figureName);
+      const audioUrl = await generateVoiceResponse(text, figureName, subId);
       
       if (!audioUrl) {
         return res.status(500).json({ message: "Failed to generate voice response" });
@@ -307,6 +340,59 @@ Remember: This is a casual chat, not a lecture. Be brief, warm, and engaging.`;
 
   // Serve uploaded videos
   app.use('/uploads', express.static(uploadDir));
+
+  // POST upload voice for a sub
+  app.post('/api/subs/:id/upload-voice', async (req, res) => {
+    // Create a single instance of multer for this request
+    const uploadHandler = uploadVoice.single('voice');
+    
+    // Handle multer errors explicitly
+    uploadHandler(req, res, async (err) => {
+      if (err) {
+        console.error("Multer error:", err);
+        if (err instanceof multer.MulterError) {
+          // A Multer error occurred when uploading
+          return res.status(400).json({ message: `Upload error: ${err.message}` });
+        }
+        // An unknown error occurred
+        return res.status(500).json({ message: `Unknown upload error: ${err.message}` });
+      }
+      
+      try {
+        const subId = parseInt(req.params.id);
+        const file = req.file;
+        
+        if (!file) {
+          return res.status(400).json({ message: "No voice file uploaded" });
+        }
+        
+        console.log(`Voice file uploaded successfully: ${file.filename}, size: ${file.size} bytes`);
+        
+        // Get the sub
+        const sub = await storage.getSub(subId);
+        if (!sub) {
+          return res.status(404).json({ message: "Sub not found" });
+        }
+        
+        // Generate a relative URL to the voice file
+        const voiceFile = `/uploads/voices/${file.filename}`;
+        
+        // Update the sub with the voice file URL
+        const updatedSub = await storage.updateSub(subId, { voiceFile });
+        
+        if (!updatedSub) {
+          return res.status(500).json({ message: "Failed to update sub with voice file URL" });
+        }
+        
+        console.log(`Successfully updated Sub #${subId} with voice file URL: ${voiceFile}`);
+        res.json(updatedSub);
+      } catch (error) {
+        console.error("Error processing voice upload:", error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        res.status(500).json({ message: `Upload processing error: ${errorMessage}` });
+      }
+    });
+  });
 
   // Initialize the storage with initial subs data if empty
   await storage.initializeData();
