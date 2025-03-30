@@ -6,9 +6,73 @@
     <title>The Subs AI - Talk to and learn from history's greatest minds</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Lora:wght@400;500;600&family=Roboto+Slab:wght@300;400;500&display=swap" rel="stylesheet">
     <meta name="description" content="The Subs AI - Have conversations with AI versions of historical and cultural figures" />
+    <style>
+      /* Fallback styles if React doesn't load */
+      #loading-fallback {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        font-family: 'Playfair Display', serif;
+        background-color: #F5EDD7;
+        color: #7D2B35;
+        text-align: center;
+        padding: 20px;
+      }
+      #loading-fallback h1 {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+      }
+      #loading-fallback p {
+        font-family: 'Lora', serif;
+        margin-bottom: 1rem;
+      }
+      .logo-placeholder {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background-color: #7D2B35;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+        color: #F5EDD7;
+        font-size: 2rem;
+      }
+      /* This element will be hidden once React loads */
+      #root:not(:empty) + #loading-fallback {
+        display: none;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
+    
+    <!-- Fallback content that shows only if React doesn't load -->
+    <div id="loading-fallback">
+      <div class="logo-placeholder">S</div>
+      <h1>The Subs AI</h1>
+      <p>Loading our historical figures...</p>
+      <p>If this message persists, please try refreshing the page.</p>
+    </div>
+    
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Detect if the app fails to load after a timeout -->
+    <script>
+      // After 10 seconds, check if React has loaded content
+      setTimeout(function() {
+        const root = document.getElementById('root');
+        const fallback = document.getElementById('loading-fallback');
+        if (root && root.children.length === 0 && fallback) {
+          // Update the fallback message if React hasn't loaded
+          const message = fallback.querySelector('p');
+          if (message) {
+            message.textContent = 'The application is taking longer than expected to load. Please try refreshing the page.';
+          }
+        }
+      }, 10000);
+    </script>
   </body>
 </html>

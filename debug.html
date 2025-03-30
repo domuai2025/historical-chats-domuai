@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Debug Page</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    h1 {
+      color: #7D2B35;
+    }
+    .debug-box {
+      border: 1px solid #ccc;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h1>The Subs AI - Debug Page</h1>
+  
+  <div class="debug-box">
+    <h2>API Status</h2>
+    <div id="api-status">Checking API status...</div>
+    <pre id="api-response"></pre>
+  </div>
+
+  <div class="debug-box">
+    <h2>React App</h2>
+    <p>The main application should be accessible at: <a href="/" target="_blank">Main App</a></p>
+  </div>
+
+  <script>
+    // Check API status
+    fetch('/api/subs')
+      .then(response => {
+        document.getElementById('api-status').textContent = 
+          `API Status: ${response.status} ${response.statusText}`;
+        return response.json();
+      })
+      .then(data => {
+        document.getElementById('api-response').textContent = 
+          JSON.stringify(data.slice(0, 2), null, 2) + '...';
+      })
+      .catch(error => {
+        document.getElementById('api-status').textContent = 
+          `API Error: ${error.message}`;
+      });
+  </script>
+</body>
+</html>
