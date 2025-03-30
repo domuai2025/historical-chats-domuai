@@ -27,6 +27,64 @@ const ensureUploadDir = async () => {
   }
 };
 
+// Function to verify and fix video paths
+const verifyAndFixVideoPaths = async () => {
+  try {
+    // Path to the video URLs file
+    const videoUrlsFile = path.join(__dirname, '../data/video-urls.json');
+    
+    // Create data directory if it doesn't exist
+    const dataDir = path.join(__dirname, '../data');
+    await fs.mkdir(dataDir, { recursive: true });
+    
+    // Check if the file exists
+    let videoUrls: Record<string, string> = {};
+    try {
+      const videoUrlsData = await fs.readFile(videoUrlsFile, 'utf-8');
+      videoUrls = JSON.parse(videoUrlsData);
+    } catch (error) {
+      console.log("No existing video URLs file, will create new one.");
+    }
+    
+    // Get all subs
+    const subs = await storage.getAllSubs();
+    
+    // Check each sub's video URL
+    for (const sub of subs) {
+      if (sub.videoUrl) {
+        // Check if the video exists
+        const videoPath = path.join(__dirname, '..', sub.videoUrl);
+        try {
+          // Check if file exists and is accessible
+          await fs.access(videoPath, fsSync.constants.F_OK);
+        } catch (error) {
+          console.warn(`Video file not found for sub ${sub.id}: ${sub.videoUrl}`);
+          
+          // Check if we have a fallback URL in our map
+          const subIdStr = sub.id.toString();
+          if (videoUrls[subIdStr]) {
+            console.log(`Restoring video URL for sub ${sub.id} from map: ${videoUrls[subIdStr]}`);
+            await storage.updateSub(sub.id, { videoUrl: videoUrls[subIdStr] });
+          }
+        }
+      }
+      
+      // Update our map if necessary
+      const subIdStr = sub.id.toString();
+      if (sub.videoUrl && (!videoUrls[subIdStr] || videoUrls[subIdStr] !== sub.videoUrl)) {
+        console.log(`Updating video URL map for sub ${sub.id}: ${sub.videoUrl}`);
+        videoUrls[subIdStr] = sub.videoUrl;
+      }
+    }
+    
+    // Save updated video URLs map
+    await fs.writeFile(videoUrlsFile, JSON.stringify(videoUrls, null, 2), 'utf-8');
+    console.log("Video URLs file updated successfully.");
+  } catch (error) {
+    console.error("Error verifying video paths:", error);
+  }
+};
+
 // Setup OpenAI
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || "sk-demo-key",
@@ -90,6 +148,9 @@ const uploadVoice = multer({
 export async function registerRoutes(app: Express): Promise<Server> {
   // Ensure upload directory exists
   await ensureUploadDir();
+  
+  // Verify and fix video paths
+  await verifyAndFixVideoPaths();
 
   // GET all subs
   app.get('/api/subs', async (_req, res) => {
@@ -354,6 +415,30 @@ Remember: This is a casual chat, not a lecture. Be brief, warm, and engaging.`;
         }
         
         console.log(`Successfully updated Sub #${subId} with video URL: ${videoUrl}`);
+        
+        // Also update our video URL map
+        try {
+          const videoUrlsFile = path.join(__dirname, '../data/video-urls.json');
+          let videoUrls: Record<string, string> = {};
+          
+          try {
+            const videoUrlsData = await fs.readFile(videoUrlsFile, 'utf-8');
+            videoUrls = JSON.parse(videoUrlsData);
+          } catch (error) {
+            console.log("No existing video URLs file when uploading, will create new one.");
+          }
+          
+          // Update the map
+          videoUrls[subId.toString()] = videoUrl;
+          
+          // Save updated map
+          await fs.writeFile(videoUrlsFile, JSON.stringify(videoUrls, null, 2), 'utf-8');
+          console.log(`Updated video URL map for sub ${subId}: ${videoUrl}`);
+        } catch (mapError) {
+          console.error("Error updating video URL map:", mapError);
+          // Continue even if this fails
+        }
+        
         res.json(updatedSub);
       } catch (error) {
         console.error("Error processing video upload:", error);

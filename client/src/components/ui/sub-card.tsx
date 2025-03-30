@@ -169,6 +169,8 @@ export default function SubCard({ sub, hasVideo = false, videoSrc, onUploadClick
               autoPlay={isPlaying}
               loop
               playsInline
+              preload="metadata"
+              muted={!isPlaying}
               controls
               onLoadedData={handleVideoLoad}
               onError={handleVideoError}
