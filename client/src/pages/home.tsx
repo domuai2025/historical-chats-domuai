@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -8,7 +8,6 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import PageDivider from "@/components/layout/PageDivider";
 import SubCard from "@/components/ui/sub-card";
-import FallbackVideo from "@/components/ui/fallback-video";
 import { fetchSubs, uploadVideo } from "@/lib/api";
 import { Link } from "wouter";
 import { BookOpenIcon, MusicIcon, UserIcon } from "lucide-react";
@@ -17,21 +16,7 @@ import type { Sub } from "@shared/schema";
 export default function Home() {
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [selectedSubId, setSelectedSubId] = useState<number | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
   const { toast } = useToast();
-  
-  // Check for mobile device once when component loads
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-      console.log(`Device detection: ${window.innerWidth < 768 ? 'Mobile' : 'Desktop'} (width: ${window.innerWidth}px)`);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   const { data: subs = [] as Sub[], isLoading } = useQuery<Sub[]>({
     queryKey: ['/api/subs'],
@@ -371,18 +356,14 @@ export default function Home() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {subs.map((sub: Sub) => {
-                // Use standard SubCard for all videos consistently
-                // This approach worked on mobile before
-                return (
-                  <SubCard 
-                    key={sub.id} 
-                    sub={sub} 
-                    hasVideo={!!sub.videoUrl}
-                    videoSrc={sub.videoUrl || undefined}
-                  />
-                );
-              })}
+              {subs.map((sub: Sub) => (
+                <SubCard 
+                  key={sub.id} 
+                  sub={sub} 
+                  hasVideo={!!sub.videoUrl}
+                  videoSrc={sub.videoUrl || undefined}
+                />
+              ))}
             </div>
           )}
           

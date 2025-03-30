@@ -12,12 +12,6 @@ export function useIsMobile() {
     }
     mql.addEventListener("change", onChange)
     setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    
-    // Log detection for debugging
-    setTimeout(() => {
-      console.log(`Mobile detection: ${window.innerWidth < MOBILE_BREAKPOINT ? 'Mobile' : 'Desktop'} (width: ${window.innerWidth}px)`);
-    }, 500);
-    
     return () => mql.removeEventListener("change", onChange)
   }, [])
 

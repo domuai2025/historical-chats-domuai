@@ -27,89 +27,6 @@ const ensureUploadDir = async () => {
   }
 };
 
-// Function to verify and fix video paths
-const verifyAndFixVideoPaths = async () => {
-  try {
-    // Path to the video URLs file
-    const videoUrlsFile = path.join(__dirname, '../data/video-urls.json');
-    
-    // Create data directory if it doesn't exist
-    const dataDir = path.join(__dirname, '../data');
-    await fs.mkdir(dataDir, { recursive: true });
-    
-    // Check if the file exists
-    let videoUrls: Record<string, string> = {};
-    try {
-      const videoUrlsData = await fs.readFile(videoUrlsFile, 'utf-8');
-      videoUrls = JSON.parse(videoUrlsData);
-      console.log(`Loaded ${Object.keys(videoUrls).length} persisted video URLs from ${videoUrlsFile}`);
-    } catch (error) {
-      console.log("No existing video URLs file, will create new one.");
-    }
-    
-    // Special handling for known problematic videos (like Socrates ID 4)
-    const problematicVideos = {
-      "4": {
-        name: "Socrates",
-        expectedPath: "/uploads/1743266807805-173402907-Teacher Socrets.mp4"
-      },
-      "14": {
-        name: "John Lennon",
-        expectedPath: "/uploads/1743266967223-336437809-Teacher Lennon.mp4"
-      },
-      "17": {
-        name: "Janis Joplin",
-        expectedPath: "/uploads/1743267036717-929957909-Teacher Joplin.mp4"
-      }
-    };
-    
-    // Force fix for problematic videos
-    Object.entries(problematicVideos).forEach(([id, info]) => {
-      if (videoUrls[id] !== info.expectedPath) {
-        console.log(`Fixing video path for ${info.name} (ID: ${id}): ${info.expectedPath}`);
-        videoUrls[id] = info.expectedPath;
-      }
-    });
-    
-    // Get all subs
-    const subs = await storage.getAllSubs();
-    
-    // Check each sub's video URL
-    for (const sub of subs) {
-      if (sub.videoUrl) {
-        // Check if the video exists
-        const videoPath = path.join(__dirname, '..', sub.videoUrl);
-        try {
-          // Check if file exists and is accessible
-          await fs.access(videoPath, fsSync.constants.F_OK);
-        } catch (error) {
-          console.warn(`Video file not found for sub ${sub.id}: ${sub.videoUrl}`);
-          
-          // Check if we have a fallback URL in our map
-          const subIdStr = sub.id.toString();
-          if (videoUrls[subIdStr]) {
-            console.log(`Restoring video URL for sub ${sub.id} from map: ${videoUrls[subIdStr]}`);
-            await storage.updateSub(sub.id, { videoUrl: videoUrls[subIdStr] });
-          }
-        }
-      }
-      
-      // Update our map if necessary
-      const subIdStr = sub.id.toString();
-      if (sub.videoUrl && (!videoUrls[subIdStr] || videoUrls[subIdStr] !== sub.videoUrl)) {
-        console.log(`Updating video URL map for sub ${sub.id}: ${sub.videoUrl}`);
-        videoUrls[subIdStr] = sub.videoUrl;
-      }
-    }
-    
-    // Save updated video URLs map
-    await fs.writeFile(videoUrlsFile, JSON.stringify(videoUrls, null, 2), 'utf-8');
-    console.log("Video URLs file updated successfully.");
-  } catch (error) {
-    console.error("Error verifying video paths:", error);
-  }
-};
-
 // Setup OpenAI
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || "sk-demo-key",
@@ -173,9 +90,6 @@ const uploadVoice = multer({
 export async function registerRoutes(app: Express): Promise<Server> {
   // Ensure upload directory exists
   await ensureUploadDir();
-  
-  // Verify and fix video paths
-  await verifyAndFixVideoPaths();
 
   // GET all subs
   app.get('/api/subs', async (_req, res) => {
@@ -312,20 +226,14 @@ Remember: This is a casual chat, not a lecture. Be brief, warm, and engaging.`;
       // Extract the AI response from OpenAI
       const aiResponse = response.choices[0].message.content || "I'm sorry, I couldn't generate a response.";
       
-      // Get the voice file directly from the sub if available
-      let audioUrl = sub.voiceFile || '';
-      
-      // If no existing voice file, try to generate one with ElevenLabs (if API key available)
-      if (!audioUrl && process.env.ELEVENLABS_API_KEY) {
-        try {
-          audioUrl = await generateVoiceResponse(aiResponse, sub.name, messageData.subId);
-          console.log(`Generated audio response for ${sub.name}: ${audioUrl}`);
-        } catch (audioError) {
-          console.error('Error generating audio response:', audioError);
-          // Continue without audio if there's an error
-        }
-      } else if (!audioUrl) {
-        console.log(`No voice file available for ${sub.name} and no ElevenLabs API key configured`);
+      // Generate audio version of the response using ElevenLabs or custom voice file
+      let audioUrl = '';
+      try {
+        audioUrl = await generateVoiceResponse(aiResponse, sub.name, messageData.subId);
+        console.log(`Generated audio response for ${sub.name}: ${audioUrl}`);
+      } catch (audioError) {
+        console.error('Error generating audio response:', audioError);
+        // Continue without audio if there's an error
       }
       
       // Save the message with the AI response and audio URL
@@ -356,14 +264,6 @@ Remember: This is a casual chat, not a lecture. Be brief, warm, and engaging.`;
   // GET generate audio for text
   app.get('/api/voice', async (req, res) => {
     try {
-      // Check if we have ElevenLabs API key configured
-      if (!process.env.ELEVENLABS_API_KEY) {
-        return res.status(503).json({ 
-          message: "Voice generation is not available - ELEVENLABS_API_KEY is not configured", 
-          missingApiKey: true
-        });
-      }
-      
       const text = req.query.text as string;
       const figureName = req.query.figure as string;
       const subId = req.query.subId ? parseInt(req.query.subId as string) : undefined;
@@ -372,17 +272,6 @@ Remember: This is a casual chat, not a lecture. Be brief, warm, and engaging.`;
         return res.status(400).json({ message: "Missing required parameters: text and figure" });
       }
       
-      // If a subId is provided, check if the sub has a custom voice file
-      if (subId) {
-        const { storage } = await import('./storage');
-        const sub = await storage.getSub(subId);
-        if (sub?.voiceFile) {
-          // Return the existing voice file instead of generating a new one
-          return res.json({ audioUrl: sub.voiceFile });
-        }
-      }
-      
-      // Generate new voice response with ElevenLabs
       const audioUrl = await generateVoiceResponse(text, figureName, subId);
       
       if (!audioUrl) {
@@ -440,30 +329,6 @@ Remember: This is a casual chat, not a lecture. Be brief, warm, and engaging.`;
         }
         
         console.log(`Successfully updated Sub #${subId} with video URL: ${videoUrl}`);
-        
-        // Also update our video URL map
-        try {
-          const videoUrlsFile = path.join(__dirname, '../data/video-urls.json');
-          let videoUrls: Record<string, string> = {};
-          
-          try {
-            const videoUrlsData = await fs.readFile(videoUrlsFile, 'utf-8');
-            videoUrls = JSON.parse(videoUrlsData);
-          } catch (error) {
-            console.log("No existing video URLs file when uploading, will create new one.");
-          }
-          
-          // Update the map
-          videoUrls[subId.toString()] = videoUrl;
-          
-          // Save updated map
-          await fs.writeFile(videoUrlsFile, JSON.stringify(videoUrls, null, 2), 'utf-8');
-          console.log(`Updated video URL map for sub ${subId}: ${videoUrl}`);
-        } catch (mapError) {
-          console.error("Error updating video URL map:", mapError);
-          // Continue even if this fails
-        }
-        
         res.json(updatedSub);
       } catch (error) {
         console.error("Error processing video upload:", error);
