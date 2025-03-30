@@ -1,0 +1,13 @@
+# Standard node ignores
+node_modules
+.DS_Store
+
+# Make sure to keep these important directories
+!uploads/
+!uploads/**/*
+!dist/uploads/
+!dist/uploads/**/*
+!data/
+!data/**/*
+!dist/data/
+!dist/data/**/*

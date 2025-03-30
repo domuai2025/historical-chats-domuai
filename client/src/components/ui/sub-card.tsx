@@ -177,7 +177,19 @@ export default function SubCard({ sub, hasVideo = false, videoSrc, onUploadClick
               onPlay={() => setIsPlaying(true)}
               onPause={() => setIsPlaying(false)}
             >
-              {videoSrc && <source src={videoSrc} type="video/mp4" />}
+              {videoSrc && (
+                <>
+                  {/* Using source tags approach for better cross-environment compatibility */}
+                  <source src={videoSrc} type="video/mp4" />
+                  {/* Fallback in case the direct path doesn't work in production */}
+                  <source 
+                    src={videoSrc.startsWith('/uploads/') 
+                      ? `/uploads/videos/${videoSrc.split('/').pop()}` 
+                      : videoSrc} 
+                    type="video/mp4" 
+                  />
+                </>
+              )}
               Your browser does not support the video tag.
             </video>
           </>

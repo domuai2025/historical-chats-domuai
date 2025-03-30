@@ -173,7 +173,19 @@ export default function Chat() {
                   onPlay={handleVideoPlay}
                   onError={handleVideoError}
                 >
-                  {sub.videoUrl && <source src={sub.videoUrl} type="video/mp4" />}
+                  {sub.videoUrl && (
+                    <>
+                      {/* Using source tags approach for better cross-environment compatibility */}
+                      <source src={sub.videoUrl} type="video/mp4" />
+                      {/* Fallback in case the direct path doesn't work in production */}
+                      <source 
+                        src={sub.videoUrl.startsWith('/uploads/') 
+                          ? `/uploads/videos/${sub.videoUrl.split('/').pop()}` 
+                          : sub.videoUrl} 
+                        type="video/mp4" 
+                      />
+                    </>
+                  )}
                   Your browser does not support the video tag.
                 </video>
                 {/* Video info now shows above the video instead of overlaying it */}

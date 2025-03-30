@@ -338,8 +338,55 @@ Remember: This is a casual chat, not a lecture. Be brief, warm, and engaging.`;
     });
   });
 
-  // Serve uploaded videos
-  app.use('/uploads', express.static(uploadDir));
+  // Serve uploaded videos with enhanced handling for production
+  app.use('/uploads', (req, res, next) => {
+    console.log(`Accessing upload file: ${req.path}`);
+    
+    // Standard static serving - this works in development
+    express.static(uploadDir)(req, res, (err) => {
+      if (err) {
+        console.error(`Error serving file from ${uploadDir}:`, err);
+      }
+      
+      // If we get here, the standard static serving didn't find the file
+      if (!res.headersSent) {
+        // Check if we're in production
+        if (process.env.NODE_ENV === 'production') {
+          try {
+            // Try to find the file name from the path
+            const fileName = req.path.split('/').pop();
+            if (fileName) {
+              console.log(`Looking for ${fileName} in various locations...`);
+              
+              // In production, we might need to look in different places
+              const possiblePaths = [
+                path.join(uploadDir, fileName),
+                path.join(__dirname, '../uploads', fileName),
+                path.join(process.cwd(), 'uploads', fileName),
+                path.join(process.cwd(), 'dist/uploads', fileName)
+              ];
+              
+              // Check each possible path
+              for (const filePath of possiblePaths) {
+                console.log(`Checking: ${filePath}`);
+                if (fsSync.existsSync(filePath)) {
+                  console.log(`Found file at: ${filePath}`);
+                  return res.sendFile(filePath);
+                }
+              }
+            }
+          } catch (findError) {
+            console.error('Error while trying alternative file paths:', findError);
+          }
+        }
+        
+        // If all else fails
+        next();
+      } else {
+        next();
+      }
+    });
+  });
 
   // POST upload voice for a sub
   app.post('/api/subs/:id/upload-voice', async (req, res) => {
