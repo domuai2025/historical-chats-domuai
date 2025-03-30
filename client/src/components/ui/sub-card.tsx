@@ -95,10 +95,9 @@ export default function SubCard({ sub, hasVideo = false, videoSrc, onUploadClick
   };
   
   const handleVideoError = () => {
-    console.log(`Video error for sub: ${sub.name}`);
     setVideoLoaded(true); // Set to true so we can show the error state
     setVideoError(true);
-    setShowAudioWave(false); // Don't show audio wave as fallback - use avatar or initials instead
+    setShowAudioWave(true); // Show audio wave as fallback
   };
   
   // Generate a unique URL for sharing this specific sub
