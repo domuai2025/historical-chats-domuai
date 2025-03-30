@@ -87,6 +87,11 @@ export default function Chat() {
     }
   };
   
+  // Handler for video error
+  const handleVideoError = () => {
+    console.log(`Chat page video error for ${sub?.name}: ${sub?.videoUrl}`);
+  };
+  
   // Show loading state if data is not yet available
   if (isLoadingSub || !sub) {
     return (
@@ -160,14 +165,15 @@ export default function Chat() {
                 <video 
                   ref={videoRef}
                   className="w-full h-auto"
-                  src={sub.videoUrl}
                   poster={sub.avatarUrl || undefined}
                   controls
                   autoPlay
                   preload="metadata"
                   playsInline
                   onPlay={handleVideoPlay}
+                  onError={handleVideoError}
                 >
+                  {sub.videoUrl && <source src={sub.videoUrl} type="video/mp4" />}
                   Your browser does not support the video tag.
                 </video>
                 {/* Video info now shows above the video instead of overlaying it */}

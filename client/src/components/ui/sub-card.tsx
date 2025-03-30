@@ -95,6 +95,7 @@ export default function SubCard({ sub, hasVideo = false, videoSrc, onUploadClick
   };
   
   const handleVideoError = () => {
+    console.log(`Video error for ${sub.name}: ${videoSrc}`);
     setVideoLoaded(true); // Set to true so we can show the error state
     setVideoError(true);
     setShowAudioWave(true); // Show audio wave as fallback
