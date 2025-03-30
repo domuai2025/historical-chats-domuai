@@ -42,9 +42,34 @@ const verifyAndFixVideoPaths = async () => {
     try {
       const videoUrlsData = await fs.readFile(videoUrlsFile, 'utf-8');
       videoUrls = JSON.parse(videoUrlsData);
+      console.log(`Loaded ${Object.keys(videoUrls).length} persisted video URLs from ${videoUrlsFile}`);
     } catch (error) {
       console.log("No existing video URLs file, will create new one.");
     }
+    
+    // Special handling for known problematic videos (like Socrates ID 4)
+    const problematicVideos = {
+      "4": {
+        name: "Socrates",
+        expectedPath: "/uploads/1743266807805-173402907-Teacher Socrets.mp4"
+      },
+      "14": {
+        name: "John Lennon",
+        expectedPath: "/uploads/1743266967223-336437809-Teacher Lennon.mp4"
+      },
+      "17": {
+        name: "Janis Joplin",
+        expectedPath: "/uploads/1743267036717-929957909-Teacher Joplin.mp4"
+      }
+    };
+    
+    // Force fix for problematic videos
+    Object.entries(problematicVideos).forEach(([id, info]) => {
+      if (videoUrls[id] !== info.expectedPath) {
+        console.log(`Fixing video path for ${info.name} (ID: ${id}): ${info.expectedPath}`);
+        videoUrls[id] = info.expectedPath;
+      }
+    });
     
     // Get all subs
     const subs = await storage.getAllSubs();

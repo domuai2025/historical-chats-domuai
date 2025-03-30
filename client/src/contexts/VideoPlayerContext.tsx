@@ -23,7 +23,7 @@ export const useVideoPlayer = () => useContext(VideoPlayerContext);
 export const VideoPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [players, setPlayers] = useState<Map<number, VideoPlayer>>(new Map());
   // Track large videos specifically for special handling
-  const [largeVideoIds] = useState<number[]>([4, 14, 17]); // Socrates, John Lennon, Janis Joplin
+  const [largeVideoIds] = useState<number[]>([4, 14, 17]); // ID 4=Socrates(Socrets), 14=John Lennon, 17=Janis Joplin
 
   // Memory management - clean up unused players
   useEffect(() => {
