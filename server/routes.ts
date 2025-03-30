@@ -226,14 +226,20 @@ Remember: This is a casual chat, not a lecture. Be brief, warm, and engaging.`;
       // Extract the AI response from OpenAI
       const aiResponse = response.choices[0].message.content || "I'm sorry, I couldn't generate a response.";
       
-      // Generate audio version of the response using ElevenLabs or custom voice file
-      let audioUrl = '';
-      try {
-        audioUrl = await generateVoiceResponse(aiResponse, sub.name, messageData.subId);
-        console.log(`Generated audio response for ${sub.name}: ${audioUrl}`);
-      } catch (audioError) {
-        console.error('Error generating audio response:', audioError);
-        // Continue without audio if there's an error
+      // Get the voice file directly from the sub if available
+      let audioUrl = sub.voiceFile || '';
+      
+      // If no existing voice file, try to generate one with ElevenLabs (if API key available)
+      if (!audioUrl && process.env.ELEVENLABS_API_KEY) {
+        try {
+          audioUrl = await generateVoiceResponse(aiResponse, sub.name, messageData.subId);
+          console.log(`Generated audio response for ${sub.name}: ${audioUrl}`);
+        } catch (audioError) {
+          console.error('Error generating audio response:', audioError);
+          // Continue without audio if there's an error
+        }
+      } else if (!audioUrl) {
+        console.log(`No voice file available for ${sub.name} and no ElevenLabs API key configured`);
       }
       
       // Save the message with the AI response and audio URL
@@ -264,6 +270,14 @@ Remember: This is a casual chat, not a lecture. Be brief, warm, and engaging.`;
   // GET generate audio for text
   app.get('/api/voice', async (req, res) => {
     try {
+      // Check if we have ElevenLabs API key configured
+      if (!process.env.ELEVENLABS_API_KEY) {
+        return res.status(503).json({ 
+          message: "Voice generation is not available - ELEVENLABS_API_KEY is not configured", 
+          missingApiKey: true
+        });
+      }
+      
       const text = req.query.text as string;
       const figureName = req.query.figure as string;
       const subId = req.query.subId ? parseInt(req.query.subId as string) : undefined;
@@ -272,6 +286,17 @@ Remember: This is a casual chat, not a lecture. Be brief, warm, and engaging.`;
         return res.status(400).json({ message: "Missing required parameters: text and figure" });
       }
       
+      // If a subId is provided, check if the sub has a custom voice file
+      if (subId) {
+        const { storage } = await import('./storage');
+        const sub = await storage.getSub(subId);
+        if (sub?.voiceFile) {
+          // Return the existing voice file instead of generating a new one
+          return res.json({ audioUrl: sub.voiceFile });
+        }
+      }
+      
+      // Generate new voice response with ElevenLabs
       const audioUrl = await generateVoiceResponse(text, figureName, subId);
       
       if (!audioUrl) {

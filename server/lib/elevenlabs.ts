@@ -120,22 +120,39 @@ export async function generateVoiceResponse(
         : figureToVoiceMap.default_male;
     }
     
-    // Generate audio with ElevenLabs
-    const audioBuffer = await elevenlabs.textToSpeech({
-      // Required parameters
-      voiceId,
-      textInput: text,
-      // Optional parameters
-      voiceSettings: defaultVoiceSettings,
-      modelId: 'eleven_turbo_v2', // Use newest model
-      outputFormat: 'mp3_44100_128',
-    });
+    // Check if ElevenLabs API key is available
+    if (!process.env.ELEVENLABS_API_KEY) {
+      console.warn('ELEVENLABS_API_KEY is not set. Cannot generate voice response.');
+      return '';
+    }
     
-    // Save the audio file
-    fs.writeFileSync(filePath, audioBuffer);
-    
-    // Return the URL to the audio file
-    return `/uploads/audio/${fileName}`;
+    try {
+      // Generate audio with ElevenLabs
+      const audioBuffer = await elevenlabs.textToSpeech({
+        // Required parameters
+        voiceId,
+        textInput: text,
+        // Optional parameters
+        voiceSettings: defaultVoiceSettings,
+        modelId: 'eleven_turbo_v2', // Use newest model
+        outputFormat: 'mp3_44100_128',
+      });
+      
+      // Make sure we have valid audio data before writing to file
+      if (!audioBuffer) {
+        console.error('No audio data received from ElevenLabs API');
+        return '';
+      }
+      
+      // Save the audio file
+      fs.writeFileSync(filePath, audioBuffer);
+      
+      // Return the URL to the audio file
+      return `/uploads/audio/${fileName}`;
+    } catch (error) {
+      console.error('Error generating audio with ElevenLabs:', error);
+      return '';
+    }
   } catch (error) {
     console.error('Error generating voice response:', error);
     // Return empty string on error
