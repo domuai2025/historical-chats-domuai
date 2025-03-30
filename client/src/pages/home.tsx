@@ -86,7 +86,7 @@ export default function Home() {
       {/* Hero Section */}
       <section className="bg-cream py-8 md:py-12">
         <div className="container mx-auto px-4 max-w-4xl">
-          <div className="bg-beige border border-gold/20 rounded-lg p-6 md:p-10 text-center">
+          <div className="bg-beige border border-gold/20 rounded-lg p-6 md:p-10 text-center gold-shimmer gold-shimmer-border">
             <div className="mx-auto w-40 h-40 mb-8 main-logo-container">
               <svg width="100%" height="100%" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="main-logo-svg">
                 {/* Outer circle with fancy border */}
@@ -306,7 +306,9 @@ export default function Home() {
               </svg>
             </div>
             
-            <h1 className="font-serif text-burgundy text-4xl md:text-5xl mb-4">The Subs <span className="text-gold font-normal">AI</span><sup className="text-xs relative -top-3">™</sup></h1>
+            <h1 className="font-serif text-4xl md:text-5xl mb-4">
+              <span className="gold-shimmer-text">The Subs <span className="font-normal">AI</span></span><sup className="text-xs relative -top-3 text-burgundy">™</sup>
+            </h1>
             
             <p className="font-serif text-darkbrown italic mb-4 text-lg">Step back in time and engage with history's greatest minds</p>
             
@@ -331,7 +333,7 @@ export default function Home() {
               Have a one-on-one conversation with AI versions of history's greatest figures and immerse yourself in their knowledge and perspectives.
             </p>
             
-            <a href="#figure-selection" className="inline-block bg-burgundy hover:bg-burgundy/90 text-cream py-3 px-8 rounded-md font-serif transition-colors">
+            <a href="#figure-selection" className="inline-block bg-burgundy hover:bg-burgundy/90 text-cream py-3 px-8 rounded-md font-serif transition-colors relative gold-shimmer overflow-hidden">
               Select a historical figure below to begin
             </a>
           </div>
@@ -343,7 +345,7 @@ export default function Home() {
       {/* Figure Selection Section */}
       <section id="figure-selection" className="py-6 md:py-10 flex-grow">
         <div className="container mx-auto px-4">
-          <h2 className="font-serif text-2xl md:text-3xl text-burgundy text-center mb-10">
+          <h2 className="font-serif text-2xl md:text-3xl text-center mb-10 gold-shimmer-text">
             Select your conversational partner
           </h2>
           
@@ -382,9 +384,9 @@ export default function Home() {
 
       {/* Upload Dialog */}
       <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
-        <DialogContent className="bg-cream border border-gold/30">
+        <DialogContent className="bg-cream border border-gold/30 gold-shimmer-border">
           <DialogHeader>
-            <DialogTitle className="font-serif text-xl text-burgundy">Upload Video</DialogTitle>
+            <DialogTitle className="font-serif text-xl gold-shimmer-text">Upload Video</DialogTitle>
           </DialogHeader>
           <div className="py-4">
             <p className="mb-4 text-darkbrown font-serif">Select a video file to upload for this historical figure.</p>
@@ -436,7 +438,7 @@ export default function Home() {
               disabled={uploadMutation.isPending}
               type="button"
               onClick={() => document.querySelector<HTMLInputElement>('input[type="file"]')?.click()}
-              className="bg-burgundy hover:bg-burgundy/90 text-cream font-serif"
+              className="bg-burgundy hover:bg-burgundy/90 text-cream font-serif gold-shimmer relative overflow-hidden"
             >
               {uploadMutation.isPending ? "Uploading..." : "Select File"}
             </Button>

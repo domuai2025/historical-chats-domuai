@@ -105,7 +105,7 @@ export default function SubCard({ sub, hasVideo = false, videoSrc, onUploadClick
   
   return (
     <div 
-      className="relative overflow-hidden rounded-md border border-gold/30 bg-cream transition-all duration-300 hover:shadow-md"
+      className="relative overflow-hidden rounded-md border border-gold/30 bg-cream transition-all duration-300 hover:shadow-md steampunk-card"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -212,13 +212,13 @@ export default function SubCard({ sub, hasVideo = false, videoSrc, onUploadClick
       </div>
       
       <div className="p-4">
-        <h3 className="font-serif text-xl font-medium text-burgundy">{sub.name}</h3>
+        <h3 className="font-serif text-xl font-medium gold-shimmer-text">{sub.name}</h3>
         <p className="text-sm text-darkbrown/80 italic">{sub.title}</p>
         
         <div className="mt-4 space-y-2">
           <Link href={`/chat/${sub.id}`}>
             <Button 
-              className="w-full bg-burgundy text-cream hover:bg-burgundy/90"
+              className="w-full bg-burgundy text-cream hover:bg-burgundy/90 gold-shimmer relative"
             >
               Start Conversation
             </Button>
@@ -226,7 +226,7 @@ export default function SubCard({ sub, hasVideo = false, videoSrc, onUploadClick
           
           {onUploadClick && (
             <Button 
-              className="w-full bg-gold/80 text-darkbrown hover:bg-gold/90"
+              className="w-full bg-gold/80 text-darkbrown hover:bg-gold/90 gold-gear-border"
               onClick={() => onUploadClick(sub.id)}
             >
               Upload Video Avatar
