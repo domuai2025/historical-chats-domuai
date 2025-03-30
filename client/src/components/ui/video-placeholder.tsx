@@ -1,4 +1,4 @@
-import { PlayIcon, PauseIcon } from "lucide-react";
+import { PlayIcon, PauseIcon, AlertCircle } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 
 interface VideoPlaceholderProps {
@@ -6,10 +6,28 @@ interface VideoPlaceholderProps {
   bgColor?: string | null;
 }
 
+// Special handling for known large videos
+const isLargeVideo = (url: string): boolean => {
+  // Check for known large videos by filename components
+  const knownLargeVideoKeywords = [
+    'lennon',
+    'joplin',
+    'socrets',
+    'socrates'
+  ];
+  
+  // Check if url contains any of the keywords (case insensitive)
+  return knownLargeVideoKeywords.some(keyword => 
+    url.toLowerCase().includes(keyword.toLowerCase())
+  );
+};
+
 export default function VideoPlaceholder({ videoUrl, bgColor = "#7D2B35" }: VideoPlaceholderProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
+  const [playbackError, setPlaybackError] = useState<string | null>(null);
+  const [isLargeFile, setIsLargeFile] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [videoLoaded, setVideoLoaded] = useState(false);
@@ -43,25 +61,51 @@ export default function VideoPlaceholder({ videoUrl, bgColor = "#7D2B35" }: Vide
   const handlePlayToggle = () => {
     if (!videoUrl || !videoRef.current) return;
     
+    // Reset any previous errors
+    setPlaybackError(null);
+    
     if (isPlaying) {
       videoRef.current.pause();
       setIsPlaying(false);
     } else {
+      // For large videos, apply enhanced playback strategy
+      if (isLargeFile && videoRef.current) {
+        // Ensure video element is visible before attempting playback
+        if (videoRef.current.style.display === 'none') {
+          videoRef.current.style.display = 'block';
+        }
+        
+        // Ensure video is properly loaded
+        videoRef.current.load();
+      }
+      
       // Ensure video is unmuted and volume is set
       videoRef.current.muted = false;
       videoRef.current.volume = 1.0;
       
-      // Try to play with sound
+      // Try to play with sound with enhanced error handling
       videoRef.current.play().catch(error => {
         console.error("Error playing video:", error);
+        setPlaybackError(error.message || "Error playing video");
         
         // If browser policy blocks autoplay with sound, try muted playback
         if (error.name === "NotAllowedError" && videoRef.current) {
+          // Try muted playback
           const video = videoRef.current;
           video.muted = true;
-          video.play().catch(e => 
-            console.error("Failed to play even with muted option:", e)
-          );
+          
+          video.play().catch(e => {
+            console.error("Failed to play even with muted option:", e);
+            setPlaybackError("Cannot play video. Please try again or reload the page.");
+            setIsPlaying(false);
+            return;
+          });
+        } else if (isLargeFile) {
+          // For large files, display a specific message
+          setPlaybackError("Large video may take a moment to load. Please be patient.");
+        } else {
+          setIsPlaying(false);
+          return;
         }
       });
       
@@ -89,17 +133,27 @@ export default function VideoPlaceholder({ videoUrl, bgColor = "#7D2B35" }: Vide
     if (videoUrl) {
       setVideoLoaded(false);
       setThumbnailUrl(null);
+      setPlaybackError(null);
+      
+      // Check if this is a known large video
+      const isLargeVideoFile = isLargeVideo(videoUrl);
+      setIsLargeFile(isLargeVideoFile);
       
       // Create a temporary video element to load the first frame
       const tempVideo = document.createElement('video');
       tempVideo.crossOrigin = 'anonymous';
       tempVideo.src = encodeURI(videoUrl);
       tempVideo.muted = true;
-      tempVideo.preload = 'metadata';
+      
+      // For large videos, be conservative with preloading
+      tempVideo.preload = isLargeVideoFile ? 'metadata' : 'auto';
+      
+      // Set a timeout for thumbnail generation to ensure we don't spend too long trying to generate thumbnails
+      const thumbnailTimeout = isLargeVideoFile ? 5000 : 2000;
       
       // Only need to load metadata to get the first frame
       tempVideo.addEventListener('loadeddata', function() {
-        if (videoRef.current && canvasRef.current) {
+        if (canvasRef.current) {
           const canvas = canvasRef.current;
           canvas.width = tempVideo.videoWidth;
           canvas.height = tempVideo.videoHeight;
@@ -127,6 +181,20 @@ export default function VideoPlaceholder({ videoUrl, bgColor = "#7D2B35" }: Vide
         }
       });
       
+      // Set a safety timeout to ensure we don't wait forever for thumbnails
+      const safetyTimeoutId = setTimeout(() => {
+        if (!videoLoaded) {
+          console.log("Thumbnail generation timed out after", thumbnailTimeout, "ms");
+          setVideoLoaded(true); // Mark as loaded to proceed with UI
+        }
+      }, thumbnailTimeout);
+      
+      // Add error handling for thumbnail generation
+      tempVideo.addEventListener('error', function(e) {
+        console.error("Error loading video for thumbnail:", e);
+        setVideoLoaded(true); // Mark as loaded to prevent further attempts
+      });
+      
       // Start loading
       tempVideo.load();
     }
@@ -140,13 +208,39 @@ export default function VideoPlaceholder({ videoUrl, bgColor = "#7D2B35" }: Vide
         setIsPlaying(false);
       };
       
+      // Also add error listener
+      const handleVideoError = (e: ErrorEvent) => {
+        console.error("Video playback error:", e);
+        setIsPlaying(false);
+        setPlaybackError("Video playback error. Please try again.");
+      };
+      
       videoElement.addEventListener('ended', handleVideoEnd);
+      videoElement.addEventListener('error', handleVideoError as EventListener);
       
       return () => {
         videoElement.removeEventListener('ended', handleVideoEnd);
+        videoElement.removeEventListener('error', handleVideoError as EventListener);
       };
     }
   }, []);
+
+  // Special optimization for large videos
+  useEffect(() => {
+    if (videoRef.current && isLargeFile) {
+      // Set specific properties for large video files
+      videoRef.current.preload = "metadata"; // Only preload metadata
+      
+      // Cleanup function
+      return () => {
+        if (videoRef.current && !isPlaying) {
+          // Unload video source when component unmounts if not playing
+          // This helps free up memory for large videos
+          videoRef.current.removeAttribute('src');
+        }
+      };
+    }
+  }, [isLargeFile, isPlaying]);
 
   const bgGradient = `linear-gradient(135deg, ${bgColor}80, ${bgColor}40)`;
 
@@ -187,7 +281,8 @@ export default function VideoPlaceholder({ videoUrl, bgColor = "#7D2B35" }: Vide
             loop
             muted={!isPlaying}
             onLoadedData={handleVideoLoaded}
-            preload="metadata"
+            preload={isLargeFile ? "metadata" : "auto"}
+            playsInline // Add playsInline for better mobile support
           />
         </>
       )}
@@ -207,6 +302,21 @@ export default function VideoPlaceholder({ videoUrl, bgColor = "#7D2B35" }: Vide
               />
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Error message display */}
+      {playbackError && (
+        <div className="absolute z-30 top-2 left-2 right-2 bg-burgundy/80 text-cream p-2 rounded text-xs flex items-center">
+          <AlertCircle className="w-4 h-4 mr-1 flex-shrink-0" />
+          <span>{playbackError}</span>
+        </div>
+      )}
+
+      {/* Large file indicator for better user experience */}
+      {isLargeFile && !isPlaying && isHovered && (
+        <div className="absolute z-30 top-2 left-2 bg-burgundy/80 text-cream p-1 rounded text-xs">
+          Large video - may take longer to load
         </div>
       )}
 
