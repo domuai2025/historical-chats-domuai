@@ -4,10 +4,11 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { fetchSub, fetchMessages, sendMessage } from "@/lib/api";
-import { ChevronLeftIcon, MoreVerticalIcon, SendIcon } from "lucide-react";
+import { ChevronLeftIcon, SendIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import ChatMessage from "@/components/ui/chat-message";
+import { ShareButton } from "@/components/ui/share-button";
 import type { Message } from "@shared/schema";
 
 export default function Chat() {
@@ -99,10 +100,12 @@ export default function Chat() {
               <p className="text-xs opacity-70 font-serif italic">{sub.title}</p>
             </div>
           </div>
-          <div>
-            <button className="text-cream/90 hover:text-cream hover:bg-burgundy/80 p-1 rounded-full transition-colors" title="More options">
-              <MoreVerticalIcon className="w-5 h-5" />
-            </button>
+          <div className="flex items-center gap-2">
+            <ShareButton 
+              title={`Share this conversation with ${sub.name}`}
+              variant="icon"
+              className="text-cream hover:text-gold/90 hover:bg-burgundy/80"
+            />
           </div>
         </div>
       </header>

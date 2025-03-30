@@ -1,45 +1,159 @@
-import { Link } from "wouter";
-import type { Sub } from "@shared/schema";
-import VideoPlaceholder from "./video-placeholder";
-import UploadButton from "./upload-button";
-import { useState } from "react";
+import React, { useState } from 'react';
+import { Link } from 'wouter';
+import { Play, PauseCircle } from 'lucide-react';
+import { ShareButton } from '@/components/ui/share-button';
+import { Sub } from '@shared/schema';
+import { Button } from '@/components/ui/button';
 
 interface SubCardProps {
   sub: Sub;
-  onUploadClick: (subId: number) => void;
+  hasVideo?: boolean;
+  videoSrc?: string;
+  onUploadClick?: (subId: number) => void;
 }
 
-export default function SubCard({ sub, onUploadClick }: SubCardProps) {
+export default function SubCard({ sub, hasVideo = false, videoSrc, onUploadClick }: SubCardProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [showAudioWave, setShowAudioWave] = useState(false);
+  const [videoLoaded, setVideoLoaded] = useState(false);
+  const [videoError, setVideoError] = useState(false);
+  
+  // Generate random wave bar heights for audio visualization
+  const waveHeights = Array.from({ length: 5 }, () => Math.floor(Math.random() * 20) + 10);
+  
+  const handlePlayPause = () => {
+    if (!videoLoaded && !videoError && hasVideo) {
+      return; // Don't allow play/pause while video is loading
+    }
+    setIsPlaying(!isPlaying);
+  };
+  
+  const handleVideoLoad = () => {
+    setVideoLoaded(true);
+    setVideoError(false);
+  };
+  
+  const handleVideoError = () => {
+    setVideoLoaded(true); // Set to true so we can show the error state
+    setVideoError(true);
+    setShowAudioWave(true); // Show audio wave as fallback
+  };
+  
+  // Generate a unique URL for sharing this specific sub
+  const shareUrl = `${window.location.origin}/chat/${sub.id}`;
   
   return (
     <div 
-      className="figure-card bg-cream rounded-lg overflow-hidden transition-all duration-300 border border-gold/30 hover:border-gold/50"
+      className="relative overflow-hidden rounded-md border border-gold/30 bg-cream transition-all duration-300 hover:shadow-md"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      style={{ 
-        transform: isHovered ? 'translateY(-5px)' : 'translateY(0)',
-      }}
     >
-      <div className="relative h-48 bg-beige">
-        <VideoPlaceholder videoUrl={sub.videoUrl} bgColor={sub.bgColor} />
+      <div className="relative aspect-square overflow-hidden">
+        {hasVideo ? (
+          <>
+            <div 
+              className={`absolute inset-0 z-10 flex items-center justify-center bg-burgundy/20 transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'}`}
+              onClick={handlePlayPause}
+            >
+              {!videoLoaded && !videoError && (
+                <div className="flex items-center justify-center">
+                  <div className="h-12 w-12 animate-spin rounded-full border-4 border-white border-t-transparent"></div>
+                </div>
+              )}
+              
+              {videoLoaded && !videoError && (
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  className="h-14 w-14 rounded-full border-2 border-cream bg-burgundy/60 text-cream hover:bg-burgundy"
+                >
+                  {isPlaying ? <PauseCircle size={24} /> : <Play size={24} />}
+                </Button>
+              )}
+            </div>
+            
+            {showAudioWave && videoError && (
+              <div className="absolute inset-0 z-0 flex items-center justify-center bg-burgundy">
+                <div className="audio-wave">
+                  {waveHeights.map((height, index) => (
+                    <span 
+                      key={index} 
+                      className="wave-bar"
+                      style={{ 
+                        height: `${height}px`, 
+                        animationDelay: `${index * 0.2}s` 
+                      }}
+                    ></span>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {!showAudioWave && (
+              <img 
+                src={sub.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(sub.name)}&background=7D2B35&color=F5EDD7`} 
+                alt={sub.name} 
+                className="h-full w-full object-cover"
+                style={{ display: videoLoaded && !videoError ? 'none' : 'block' }}
+              />
+            )}
+            
+            <video 
+              className={`absolute inset-0 h-full w-full object-cover ${videoLoaded && !videoError ? '' : 'hidden'}`}
+              poster={sub.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(sub.name)}&background=7D2B35&color=F5EDD7`}
+              autoPlay={isPlaying}
+              loop
+              muted
+              playsInline
+              onLoadedData={handleVideoLoad}
+              onError={handleVideoError}
+              style={{ display: videoLoaded && !videoError ? 'block' : 'none' }}
+            >
+              {videoSrc && <source src={videoSrc} type="video/mp4" />}
+              Your browser does not support the video tag.
+            </video>
+          </>
+        ) : (
+          <img 
+            src={sub.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(sub.name)}&background=7D2B35&color=F5EDD7`} 
+            alt={sub.name} 
+            className="h-full w-full object-cover"
+          />
+        )}
+        
+        {/* Share button in the top-right corner */}
+        <div className="absolute right-2 top-2 z-20">
+          <ShareButton 
+            url={shareUrl}
+            title={`Share ${sub.name}'s profile`} 
+            variant="icon"
+            className="bg-cream/80 hover:bg-cream shadow-sm"
+          />
+        </div>
       </div>
       
       <div className="p-4">
-        <h3 className="font-serif text-lg font-medium text-burgundy">{sub.name}</h3>
-        <p className="text-sm text-darkbrown/80 italic mb-4 font-serif">{sub.title}</p>
-        <div className="flex items-center justify-between">
-          {/* Hide Upload Button if a video already exists */}
-          {!sub.videoUrl ? (
-            <UploadButton onClick={() => onUploadClick(sub.id)} />
-          ) : (
-            <div className="opacity-0"></div> // Empty div to maintain layout
-          )}
+        <h3 className="font-serif text-xl font-medium text-burgundy">{sub.name}</h3>
+        <p className="text-sm text-darkbrown/80 italic">{sub.title}</p>
+        
+        <div className="mt-4 space-y-2">
           <Link href={`/chat/${sub.id}`}>
-            <div className="bg-burgundy hover:bg-burgundy/90 text-cream text-sm py-2 px-4 rounded font-serif transition-colors cursor-pointer">
+            <Button 
+              className="w-full bg-burgundy text-cream hover:bg-burgundy/90"
+            >
               Start Conversation
-            </div>
+            </Button>
           </Link>
+          
+          {onUploadClick && (
+            <Button 
+              className="w-full bg-gold/80 text-darkbrown hover:bg-gold/90"
+              onClick={() => onUploadClick(sub.id)}
+            >
+              Upload Video Avatar
+            </Button>
+          )}
         </div>
       </div>
     </div>
