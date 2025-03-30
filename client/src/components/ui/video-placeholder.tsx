@@ -9,7 +9,36 @@ interface VideoPlaceholderProps {
 export default function VideoPlaceholder({ videoUrl, bgColor = "#7D2B35" }: VideoPlaceholderProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [videoLoaded, setVideoLoaded] = useState(false);
+
+  // Function to capture the first frame of the video
+  const captureFirstFrame = () => {
+    if (!videoRef.current || !canvasRef.current) return;
+    
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    
+    // Set canvas dimensions to match video
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    
+    // Draw the current frame to the canvas
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      
+      // Convert canvas to data URL and set as thumbnail
+      try {
+        const dataUrl = canvas.toDataURL('image/jpeg');
+        setThumbnailUrl(dataUrl);
+      } catch (e) {
+        console.error("Error creating thumbnail:", e);
+      }
+    }
+  };
 
   const handlePlayToggle = () => {
     if (!videoUrl || !videoRef.current) return;
@@ -40,6 +69,24 @@ export default function VideoPlaceholder({ videoUrl, bgColor = "#7D2B35" }: Vide
     }
   };
 
+  // Handle video loaded event to capture the first frame
+  const handleVideoLoaded = () => {
+    if (!videoLoaded && videoRef.current) {
+      // Small timeout to ensure video has properly loaded its first frame
+      setTimeout(() => {
+        captureFirstFrame();
+        setVideoLoaded(true);
+      }, 100);
+    }
+  };
+
+  useEffect(() => {
+    // When videoUrl changes, reset the videoLoaded state
+    if (videoUrl) {
+      setVideoLoaded(false);
+    }
+  }, [videoUrl]);
+
   useEffect(() => {
     // Handle video end
     const videoElement = videoRef.current;
@@ -64,6 +111,9 @@ export default function VideoPlaceholder({ videoUrl, bgColor = "#7D2B35" }: Vide
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
+      {/* Hidden canvas for thumbnail generation */}
+      <canvas ref={canvasRef} style={{ display: 'none' }} />
+      
       {/* Gradient overlay */}
       <div 
         className="absolute inset-0 z-10 transition-opacity duration-300"
@@ -75,13 +125,26 @@ export default function VideoPlaceholder({ videoUrl, bgColor = "#7D2B35" }: Vide
 
       {/* Video element if available */}
       {videoUrl && (
-        <video 
-          ref={videoRef}
-          src={encodeURI(videoUrl)}
-          className="absolute inset-0 w-full h-full object-cover"
-          loop
-          muted={!isPlaying} // Only muted when not playing
-        />
+        <>
+          {/* Display thumbnail when not playing */}
+          {!isPlaying && thumbnailUrl && (
+            <img 
+              src={thumbnailUrl} 
+              alt="Video thumbnail" 
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          )}
+          <video 
+            ref={videoRef}
+            src={encodeURI(videoUrl)}
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ display: isPlaying ? 'block' : 'none' }} 
+            loop
+            muted={!isPlaying}
+            onLoadedData={handleVideoLoaded}
+            preload="metadata"
+          />
+        </>
       )}
       
       {/* Animated waveform background when no video */}
