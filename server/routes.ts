@@ -335,14 +335,7 @@ Remember: This is a casual chat, not a lecture. Be brief, warm, and engaging.`;
   });
 
   // Serve uploaded videos
-  console.log(`Serving upload directory from ${uploadDir}`);
-  app.use('/uploads', express.static(uploadDir, {
-    setHeaders: (res, path) => {
-      if (path.endsWith('.mp4')) {
-        res.setHeader('Content-Type', 'video/mp4');
-      }
-    }
-  }));
+  app.use('/uploads', express.static(uploadDir));
   
   // POST endpoint to optimize all existing videos
   app.post('/api/admin/optimize-videos', async (req, res) => {
