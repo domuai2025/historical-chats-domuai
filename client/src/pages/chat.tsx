@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import ChatMessage from "@/components/ui/chat-message";
 import { ShareButton } from "@/components/ui/share-button";
+import { SpeechToTextButton } from "@/components/ui/speech-to-text-button";
 import type { Message } from "@shared/schema";
 
 export default function Chat() {
@@ -160,6 +161,19 @@ export default function Chat() {
               placeholder="Type your question here..."
               disabled={mutation.isPending}
             />
+            
+            {/* Speech-to-text button */}
+            <SpeechToTextButton 
+              onTranscript={(text) => {
+                setMessage(text);
+                toast({
+                  title: "Voice input captured",
+                  description: "Your speech has been converted to text. Press Send to continue.",
+                });
+              }}
+              className="text-cream hover:bg-burgundy/90 rounded-md font-serif transition-colors"
+            />
+            
             <Button 
               type="submit"
               className="bg-burgundy hover:bg-burgundy/90 text-cream py-3 px-6 rounded-md font-serif transition-colors"
@@ -171,6 +185,11 @@ export default function Chat() {
               </div>
             </Button>
           </form>
+
+          {/* Voice input instructions */}
+          <p className="mt-2 text-center text-xs text-darkbrown/60 font-serif italic">
+            Click the microphone icon to use voice input. Speak clearly after the button turns purple.
+          </p>
         </div>
       </div>
     </div>
